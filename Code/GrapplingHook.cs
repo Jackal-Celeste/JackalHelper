@@ -264,7 +264,7 @@ namespace Celeste.Mod.JackalHelper.Entities
             }
 			if (JackalModule.GetLevel() != null)
 			{
-				if (this.CollideCheck<RainbowDecal>())
+				if (this.CollideCheck<LaniStar>())
 				{
 					Speed.X = 0;
 					Speed.Y = 0;

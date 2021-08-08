@@ -11,12 +11,12 @@ namespace Celeste.Mod.JackalHelper.Entities
 {
     [Tracked]
     [CustomEntity("JackalHelper/RainbowDecal")]
-    public class RainbowDecal : Solid
+    public class LaniStar : Solid
     {
         private Image sprite;
         public float cumulativeTime = 0f;
         //vate Wiggler wiggler;
-        public RainbowDecal(Vector2 position, string directory, bool wiggle) : base(position, 8,8f, false)
+        public LaniStar(Vector2 position, string directory, bool wiggle) : base(position, 8,8f, false)
         {
             Add(sprite = new Image(GFX.Game[directory]));
             sprite.Visible = true;
@@ -26,7 +26,7 @@ namespace Celeste.Mod.JackalHelper.Entities
             
         }
 
-        public RainbowDecal(EntityData data, Vector2 offset) : this(data.Position + offset, data.Attr("directory"), data.Bool("wiggle"))
+        public LaniStar(EntityData data, Vector2 offset) : this(data.Position + offset, data.Attr("directory"), data.Bool("wiggle"))
         {
 
         }

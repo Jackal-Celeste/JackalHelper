@@ -91,10 +91,4 @@ public class JackalHelperSession : EverestModuleSession
 		get;
 		set;
 	} = null;
-
-	public BouncyBooster lastBouncyBooster
-	{
-		get;
-		set;
-	} = null;
 }
