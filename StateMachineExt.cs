@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Reflection;
 using Monocle;
-using Celeste;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {

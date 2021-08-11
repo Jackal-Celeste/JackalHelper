@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -99,7 +98,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				//IL_0095: Unknown result type (might be due to invalid IL or missing references)
 				//IL_00bb: Unknown result type (might be due to invalid IL or missing references)
 				//IL_00c0: Unknown result type (might be due to invalid IL or missing references)
-				this.Depth = -1000;
+				Depth = -1000;
 				List<MTexture> atlasSubtextures = GFX.Game.GetAtlasSubtextures("objects/boosterIce/chunk");
 				MTexture texture = Calc.Random.Choose(atlasSubtextures);
 				if (sprite == null)
@@ -115,7 +114,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				direction = Calc.AngleToVector(direction.Angle() + Calc.Random.Range(-0.1f, 0.1f), 1f);
 				direction.X += Calc.Random.Range(-0.3f, 0.3f);
 				direction.Normalize();
-				speed = direction * (float)(Calc.Random.Range(140, 180));
+				speed = direction * Calc.Random.Range(140, 180);
 				percent = 0f;
 				duration = Calc.Random.Range(2, 3);
 				return this;
@@ -227,7 +226,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			ParticleSystem particlesBG = SceneAs<Level>().ParticlesBG;
 			for (int i = 0; i < 360; i += 30)
 			{
-				particlesBG.Emit(Booster.P_Appear, 1, base.Center, Vector2.One * 2f, ParticleColor, (float)i * ((float)Math.PI / 180f));
+				particlesBG.Emit(Booster.P_Appear, 1, base.Center, Vector2.One * 2f, ParticleColor, i * ((float)Math.PI / 180f));
 			}
 		}
 
@@ -258,7 +257,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			StartedBoosting = false;
 			Audio.Play(boostSfx, Position);
 			BoostingPlayer = true;
-			base.Tag = (int)Tags.Persistent | (int)Tags.TransitionUpdate;
+			base.Tag = Tags.Persistent | Tags.TransitionUpdate;
 			sprite.Play("spin");
 			sprite.FlipX = player.Facing == Facings.Left;
 			outline.Visible = true;
@@ -319,7 +318,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				{
 					for (int j = 0; (float)j < 24; j += 8)
 					{
-						base.Scene.Add(Engine.Pooler.Create<BreakDebris>().Init(new Vector2(base.X + (float)i + 4f, base.Y + (float)j + 4f), -(Position - JackalModule.GetPlayer().Position)));
+						base.Scene.Add(Engine.Pooler.Create<BreakDebris>().Init(new Vector2(base.X + i + 4f, base.Y + j + 4f), -(Position - JackalModule.GetPlayer().Position)));
 					}
 				}
 			}
@@ -352,10 +351,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			base.Update();
 			staticScene = JackalModule.GetLevel();
-            if (!FrozenDash)
-            {
+			if (!FrozenDash)
+			{
 				crystal = false;
-            }
+			}
 			if (timer <= 0f || timer > freezeTime)
 			{
 				timer = 0f;
@@ -365,12 +364,14 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				timer += Engine.DeltaTime;
 				FrozenDash = true;
-				if (JackalModule.GetPlayer()!= null){
+				if (JackalModule.GetPlayer() != null)
+				{
 					if (JackalModule.GetPlayer().Dashes > startingDashes && FrozenDash && startingDashes == 0)
 					{
 						JackalModule.GetPlayer().Dashes = startingDashes;
-					} }
-				
+					}
+				}
+
 			}
 			if (JackalModule.GetPlayer() != null && JackalModule.GetLevel() != null)
 			{

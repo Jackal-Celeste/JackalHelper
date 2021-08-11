@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Celeste.Mod;
+﻿using Celeste.Mod;
 using Celeste.Mod.JackalHelper.Entities;
 using Microsoft.Xna.Framework;
 

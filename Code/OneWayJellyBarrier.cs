@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Celeste;
 using Celeste.Mod.Entities;
-using Celeste.Mod.JackalHelper.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -59,7 +57,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public bool trackingSet = false;
 
-		public String direction;
+		public string direction;
 
 		public Color color;
 
@@ -72,7 +70,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			this.ignoreOnHeld = ignoreOnHeld;
 			this.direction = direction;
 			Collidable = false;
-			for (int i = 0; (float)i < base.Width * base.Height / 16f; i++)
+			for (int i = 0; i < base.Width * base.Height / 16f; i++)
 			{
 				particles.Add(new Vector2(Calc.Random.NextFloat(base.Width - 1f), Calc.Random.NextFloat(base.Height - 1f)));
 			}
@@ -122,7 +120,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Update()
 		{
-			Scene scene = this.Scene;
+			Scene scene = Scene;
 			if (JackalModule.GetLevel() != null && !trackingSet)
 			{
 				scene.Add(jellyrend = new JellyBarrierRenderer());

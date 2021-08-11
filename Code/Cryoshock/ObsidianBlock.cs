@@ -1,17 +1,8 @@
-﻿using Celeste;
+﻿using System;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System;
-using System.Collections;
-using Celeste.Mod.JackalHelper;
-using Celeste.Mod.JackalHelper.Entities;
-using System.Collections.Generic;
 using MonoMod.Utils;
-using System.Threading;
-using System.Xml.Serialization;
-using FMOD;
-using System.Diagnostics.Eventing.Reader;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
@@ -25,7 +16,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public Level level;
 		public Vector2 rightVertex;
 		private DynData<FireBarrier> solidData;
-		
+
 		public float linSpdY = 0f;
 		public float linSpdX = 0f;
 		public float sineAmpY = 0f;
@@ -37,7 +28,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public bool safe = false;
 
-		
+
 
 
 
@@ -63,7 +54,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			sineAmpX *= 0.25f;
 			sineAmpY *= 0.25f;
 			base.Added(scene);
-			this.Depth = 250;
+			Depth = 250;
 			Add(climbBlocker = new ClimbBlocker(false));
 			level = SceneAs<Level>();
 			//solid = level.Tracker.GetEntity<Solid>();
@@ -71,7 +62,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			vector2.X -= 3;
 			safe = false;
 
-			
+
 		}
 
 		public override void Awake(Scene scene)
@@ -84,12 +75,12 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public override void Update()
 		{
 			climbBlocker.Blocking = JackalModule.Session.HasCryoDash;
-					Motion();
-				
+			Motion();
+
 			if (JackalModule.GetLevel() != null)
 			{
 				solidData = new DynData<FireBarrier>(this);
-				
+
 				solidData.Get<LavaRect>("Lava").CenterColor = colorCheck(Calc.HexToColor("d01c01"), Calc.HexToColor("101010"));
 				solidData.Get<LavaRect>("Lava").SurfaceColor = colorCheck(Calc.HexToColor("ff8933"), Color.DarkRed);
 				solidData.Get<LavaRect>("Lava").EdgeColor = colorCheck(Calc.HexToColor("f25e29"), Color.Black);
@@ -104,28 +95,28 @@ namespace Celeste.Mod.JackalHelper.Entities
 				if (JackalModule.GetPlayer() != null)
 				{
 					Vector2 min = nearestEdge(JackalModule.GetPlayer(), out float distance);
-					if(distance < coolDistance && (JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive || JackalModule.GetPlayer().StateMachine.State == JackalModule.cryoBoostState))
-                    {
+					if (distance < coolDistance && (JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive || JackalModule.GetPlayer().StateMachine.State == JackalModule.cryoBoostState))
+					{
 						safe = true;
-                    }
+					}
 				}
 			}
 			base.Update();
 		}
 
 		public Color colorCheck(Color orig, Color goal)
-        {
+		{
 			if (JackalModule.GetPlayer() != null)
 			{
 				Vector2 min = nearestEdge(JackalModule.GetPlayer(), out float p);
-				
-				
-			    bool inRange = (JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive || JackalModule.GetPlayer().StateMachine.State == JackalModule.cryoBoostState);
+
+
+				bool inRange = (JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive || JackalModule.GetPlayer().StateMachine.State == JackalModule.cryoBoostState);
 				if (p < (4 * coolDistance) && inRange)
 				{
 					solidData = new DynData<FireBarrier>(this);
 					solidData.Get<LavaRect>("Lava").UpdateMultiplier = ((p - coolDistance) / (3 * coolDistance));
-					return Color.Lerp(goal, orig, ((p-coolDistance) / (3*coolDistance)));
+					return Color.Lerp(goal, orig, ((p - coolDistance) / (3 * coolDistance)));
 				}
 			}
 			return orig;
@@ -133,43 +124,43 @@ namespace Celeste.Mod.JackalHelper.Entities
 		}
 
 		public Vector2 nearestEdge(Player player, out float p)
-        {
-			Vector2 min = this.TopLeft;
+		{
+			Vector2 min = TopLeft;
 			float smallest = Vector2.Distance(player.Position, min);
-			if(smallest > Vector2.Distance(player.Position, this.TopCenter))
-            {
-				min = this.TopCenter;
-				smallest = Vector2.Distance(player.Position, this.TopCenter);
-			}
-			if (smallest > Vector2.Distance(player.Position, this.TopRight))
+			if (smallest > Vector2.Distance(player.Position, TopCenter))
 			{
-				min = this.TopRight;
-				smallest = Vector2.Distance(player.Position, this.TopRight);
+				min = TopCenter;
+				smallest = Vector2.Distance(player.Position, TopCenter);
 			}
-			if (smallest > Vector2.Distance(player.Position, this.CenterRight))
+			if (smallest > Vector2.Distance(player.Position, TopRight))
 			{
-				min = this.CenterRight;
-				smallest = Vector2.Distance(player.Position, this.CenterRight);
+				min = TopRight;
+				smallest = Vector2.Distance(player.Position, TopRight);
 			}
-			if (smallest > Vector2.Distance(player.Position, this.BottomRight))
+			if (smallest > Vector2.Distance(player.Position, CenterRight))
 			{
-				min = this.BottomRight;
-				smallest = Vector2.Distance(player.Position, this.BottomRight);
+				min = CenterRight;
+				smallest = Vector2.Distance(player.Position, CenterRight);
 			}
-			if (smallest > Vector2.Distance(player.Position, this.BottomCenter))
+			if (smallest > Vector2.Distance(player.Position, BottomRight))
 			{
-				min = this.BottomCenter;
-				smallest = Vector2.Distance(player.Position, this.BottomCenter);
+				min = BottomRight;
+				smallest = Vector2.Distance(player.Position, BottomRight);
 			}
-			if (smallest > Vector2.Distance(player.Position, this.BottomLeft))
+			if (smallest > Vector2.Distance(player.Position, BottomCenter))
 			{
-				min = this.BottomLeft;
-				smallest = Vector2.Distance(player.Position, this.BottomLeft);
+				min = BottomCenter;
+				smallest = Vector2.Distance(player.Position, BottomCenter);
 			}
-			if (smallest > Vector2.Distance(player.Position, this.CenterLeft))
+			if (smallest > Vector2.Distance(player.Position, BottomLeft))
 			{
-				min = this.CenterLeft;
-				smallest = Vector2.Distance(player.Position, this.CenterLeft);
+				min = BottomLeft;
+				smallest = Vector2.Distance(player.Position, BottomLeft);
+			}
+			if (smallest > Vector2.Distance(player.Position, CenterLeft))
+			{
+				min = CenterLeft;
+				smallest = Vector2.Distance(player.Position, CenterLeft);
 			}
 			p = smallest;
 			return min;

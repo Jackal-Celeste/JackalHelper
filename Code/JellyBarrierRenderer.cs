@@ -46,11 +46,11 @@ public class JellyBarrierRenderer : Entity
 
 		public void UpdateWave(float time)
 		{
-			if (Wave == null || (float)Wave.Length <= Length)
+			if (Wave == null || Wave.Length <= Length)
 			{
 				Wave = new float[(int)Length + 2];
 			}
-			for (int i = 0; (float)i <= Length; i++)
+			for (int i = 0; i <= Length; i++)
 			{
 				Wave[i] = GetWaveAt(time, i, Length);
 			}
@@ -73,7 +73,7 @@ public class JellyBarrierRenderer : Entity
 
 		public bool InView(ref Rectangle view)
 		{
-			return (float)view.Left < Parent.X + Max.X && (float)view.Right > Parent.X + Min.X && (float)view.Top < Parent.Y + Max.Y && (float)view.Bottom > Parent.Y + Min.Y;
+			return view.Left < Parent.X + Max.X && view.Right > Parent.X + Min.X && view.Top < Parent.Y + Max.Y && view.Bottom > Parent.Y + Min.Y;
 		}
 	}
 
@@ -89,7 +89,7 @@ public class JellyBarrierRenderer : Entity
 
 	public JellyBarrierRenderer()
 	{
-		base.Tag = (int)Tags.Global | (int)Tags.TransitionUpdate;
+		base.Tag = Tags.Global | Tags.TransitionUpdate;
 		base.Depth = 0;
 		Add(new CustomBloom(OnRenderBloom));
 	}
@@ -102,9 +102,9 @@ public class JellyBarrierRenderer : Entity
 			levelTileBounds = level.TileBounds;
 			tiles = new VirtualMap<bool>(levelTileBounds.Width, levelTileBounds.Height, emptyValue: false);
 		}
-		for (int i = (int)block.X / 8; (float)i < block.Right / 8f; i++)
+		for (int i = (int)block.X / 8; i < block.Right / 8f; i++)
 		{
-			for (int j = (int)block.Y / 8; (float)j < block.Bottom / 8f; j++)
+			for (int j = (int)block.Y / 8; j < block.Bottom / 8f; j++)
 			{
 				tiles[i - levelTileBounds.X, j - levelTileBounds.Y] = true;
 			}
@@ -121,9 +121,9 @@ public class JellyBarrierRenderer : Entity
 		}
 		else
 		{
-			for (int i = (int)block.X / 8; (float)i < block.Right / 8f; i++)
+			for (int i = (int)block.X / 8; i < block.Right / 8f; i++)
 			{
-				for (int j = (int)block.Y / 8; (float)j < block.Bottom / 8f; j++)
+				for (int j = (int)block.Y / 8; j < block.Bottom / 8f; j++)
 				{
 					tiles[i - levelTileBounds.X, j - levelTileBounds.Y] = false;
 				}
@@ -149,16 +149,16 @@ public class JellyBarrierRenderer : Entity
 		{
 			if (edges[i].Visible)
 			{
-				if (base.Scene.OnInterval(0.25f, (float)i * 0.01f) && !edges[i].InView(ref view))
+				if (base.Scene.OnInterval(0.25f, i * 0.01f) && !edges[i].InView(ref view))
 				{
 					edges[i].Visible = false;
 				}
 			}
-			else if (base.Scene.OnInterval(0.05f, (float)i * 0.01f) && edges[i].InView(ref view))
+			else if (base.Scene.OnInterval(0.05f, i * 0.01f) && edges[i].InView(ref view))
 			{
 				edges[i].Visible = true;
 			}
-			if (edges[i].Visible && (base.Scene.OnInterval(0.05f, (float)i * 0.01f) || edges[i].Wave == null))
+			if (edges[i].Visible && (base.Scene.OnInterval(0.05f, i * 0.01f) || edges[i].Wave == null))
 			{
 				edges[i].UpdateWave(base.Scene.TimeActive * 3f);
 			}
@@ -187,9 +187,9 @@ public class JellyBarrierRenderer : Entity
 		};
 		foreach (OneWayJellyBarrier item in list)
 		{
-			for (int i = (int)item.X / 8; (float)i < item.Right / 8f; i++)
+			for (int i = (int)item.X / 8; i < item.Right / 8f; i++)
 			{
-				for (int j = (int)item.Y / 8; (float)j < item.Bottom / 8f; j++)
+				for (int j = (int)item.Y / 8; j < item.Bottom / 8f; j++)
 				{
 					Point[] array2 = array;
 					for (int k = 0; k < array2.Length; k++)
@@ -238,7 +238,7 @@ public class JellyBarrierRenderer : Entity
 			{
 				Vector2 value = edge.Parent.Position + edge.A;
 				Vector2 vector = edge.Parent.Position + edge.B;
-				for (int i = 0; (float)i <= edge.Length; i++)
+				for (int i = 0; i <= edge.Length; i++)
 				{
 					Vector2 vector2 = value + edge.Normal * i;
 					Draw.Line(vector2, vector2 + edge.Perpendicular * edge.Wave[i], edge.Parent.color);
@@ -273,7 +273,7 @@ public class JellyBarrierRenderer : Entity
 				Vector2 value2 = edge.Parent.Position + edge.A;
 				Vector2 vector = edge.Parent.Position + edge.B;
 				Color color2 = Color.Lerp(value, Color.White, edge.Parent.Flash);
-				for (int i = 0; (float)i <= edge.Length; i++)
+				for (int i = 0; i <= edge.Length; i++)
 				{
 					Vector2 vector2 = value2 + edge.Normal * i;
 					Draw.Line(vector2, vector2 + edge.Perpendicular * edge.Wave[i], edge.Parent.color);

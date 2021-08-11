@@ -1,7 +1,5 @@
-﻿using System;
-using Celeste;
+﻿using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
-using Celeste.Mod.Entities;
 
 
 
@@ -20,12 +18,12 @@ namespace Celeste.Mod.JackalHelper.Triggers
 		}
 
 
-		public void SetColorGrade(String str, float speed)
+		public void SetColorGrade(string str, float speed)
 		{
 			level.NextColorGrade(str, speed);
 		}
 
-		public void SetColorGrade(String str)
+		public void SetColorGrade(string str)
 		{
 			level.NextColorGrade(str);
 		}

@@ -1,10 +1,8 @@
-﻿using Celeste;
+﻿using System;
+using System.Collections;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System;
-using System.Collections;
-using Celeste.Mod.JackalHelper;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
@@ -101,13 +99,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Update()
 		{
-			
+
 			if (JackalModule.GetPlayer() != null)
 			{
-				if(JackalModule.GetPlayer().StateMachine.State != 2 && JackalModule.Session.dashQueue)
-                {
+				if (JackalModule.GetPlayer().StateMachine.State != 2 && JackalModule.Session.dashQueue)
+				{
 					JackalModule.Session.dashQueue = false;
-                }
+				}
 				if (respawnTimer > 0f)
 				{
 					respawnTimer -= Engine.DeltaTime;
@@ -130,7 +128,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				}
 			}
 			pityTimer();
-				base.Update();
+			base.Update();
 		}
 
 
@@ -193,12 +191,12 @@ namespace Celeste.Mod.JackalHelper.Entities
 				{
 					player.Dashes = Math.Min(player.Dashes + 1, 2);
 				}
-				
+
 				JackalModule.Session.HasCryoDash = true;
-				if(player.StateMachine.State == 2 || player.StateMachine.State == JackalModule.cryoBoostState || player.StateMachine.State == 4 || player.StateMachine.State == 5)
-                {
+				if (player.StateMachine.State == 2 || player.StateMachine.State == JackalModule.cryoBoostState || player.StateMachine.State == 4 || player.StateMachine.State == 5)
+				{
 					JackalModule.Session.dashQueue = true;
-                }
+				}
 				Audio.Play("event:/game/general/diamond_touch", Position);
 				Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
 				Collidable = false;

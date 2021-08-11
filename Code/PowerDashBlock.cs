@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Celeste;
-using Celeste.Mod.Entities;
+﻿using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
-    [CustomEntity("JackalHelper/PowerDashBlock")]
+	[CustomEntity("JackalHelper/PowerDashBlock")]
 	public class PowerDashBlock : Solid
 	{
 		public enum Modes
@@ -108,9 +102,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 					Audio.Play("event:/game/general/wall_break_stone", Position);
 				}
 			}
-			for (int i = 0; (float)i < base.Width / 8f; i++)
+			for (int i = 0; i < base.Width / 8f; i++)
 			{
-				for (int j = 0; (float)j < base.Height / 8f; j++)
+				for (int j = 0; j < base.Height / 8f; j++)
 				{
 					base.Scene.Add(Engine.Pooler.Create<Debris>().Init(Position + new Vector2(4 + i * 8, 4 + j * 8), tileType, playDebrisSound).BlastFrom(from));
 				}
@@ -138,8 +132,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				return DashCollisionResults.NormalCollision;
 			}
-            if (JackalModule.Session.PowerDashActive)
-            {
+			if (JackalModule.Session.PowerDashActive)
+			{
 				Break(player.Center, direction, true);
 				return DashCollisionResults.Rebound;
 			}

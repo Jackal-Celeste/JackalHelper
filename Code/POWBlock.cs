@@ -233,10 +233,10 @@ public class PowBlock : Actor
 		{
 			foreach (CrystalStaticSpinner spinner in JackalModule.GetLevel().Tracker.GetEntities<CrystalStaticSpinner>())
 			{
-				if(Vector2.Distance(Position, spinner.Position) <= range)
-                {
+				if (Vector2.Distance(Position, spinner.Position) <= range)
+				{
 					spinner.Destroy(false);
-                }
+				}
 			}
 		}
 		float direction;
@@ -269,15 +269,15 @@ public class PowBlock : Actor
 		Level.Particles.Emit(TheoCrystal.P_Impact, 12, position, positionRange, direction);
 		hits--;
 
-		if(hits <= 0)
-        {
+		if (hits <= 0)
+		{
 			noGravityTimer = 999f;
 			Speed = Vector2.Zero;
 			Remove(sprite);
 			Add(new DeathEffect(threeHit ? Color.DarkBlue : Color.Red, base.Center - Position));
 			//RemoveSelf();
 			Collidable = false;
-        }
+		}
 		else if (threeHit)
 		{
 			Remove(sprite);
@@ -362,17 +362,17 @@ public class PowBlock : Actor
 	private IEnumerator MoveEntityUp()
 	{
 		yield return null;
-			Vector2 end = entity.Position + new Vector2(0f, -24f);
-			Tween tween = Tween.Create(Tween.TweenMode.Oneshot, Ease.CubeInOut, 1.2f, start: true);
-			tween.OnUpdate = delegate (Tween t)
-			{
-				entity.Position = Vector2.Lerp(entity.Position, end, t.Eased);
-			};
-			tween.OnComplete = delegate
-			{
-			};
-			Add(tween);
-		
+		Vector2 end = entity.Position + new Vector2(0f, -24f);
+		Tween tween = Tween.Create(Tween.TweenMode.Oneshot, Ease.CubeInOut, 1.2f, start: true);
+		tween.OnUpdate = delegate (Tween t)
+		{
+			entity.Position = Vector2.Lerp(entity.Position, end, t.Eased);
+		};
+		tween.OnComplete = delegate
+		{
+		};
+		Add(tween);
+
 	}
 
 	public override void Update()
@@ -455,31 +455,31 @@ public class PowBlock : Actor
 		previousPosition = base.ExactPosition;
 		MoveH(Speed.X * Engine.DeltaTime, onCollideH);
 		MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
-		if (base.Center.X > (float)Level.Bounds.Right)
+		if (base.Center.X > Level.Bounds.Right)
 		{
 			MoveH(32f * Engine.DeltaTime);
-			if (base.Right > (float)Level.Bounds.Right)
+			if (base.Right > Level.Bounds.Right)
 			{
 				base.Right = Level.Bounds.Right;
 				Speed.X *= -0.4f;
 			}
 		}
-		else if (base.Left < (float)Level.Bounds.Left)
+		else if (base.Left < Level.Bounds.Left)
 		{
 			base.Left = Level.Bounds.Left;
 			Speed.X *= -0.4f;
 		}
-		else if (base.Top < (float)(Level.Bounds.Top - 4))
+		else if (base.Top < Level.Bounds.Top - 4)
 		{
 			base.Top = Level.Bounds.Top + 4;
 			Speed.Y = 0f;
 		}
-		else if (base.Bottom > (float)Level.Bounds.Bottom + 4f)
+		else if (base.Bottom > Level.Bounds.Bottom + 4f)
 		{
 			Add(new Coroutine(DestroyWithoutItems()));
 			base.Bottom = Level.Bounds.Bottom - 4;
 		}
-		if (base.X < (float)(Level.Bounds.Left + 10))
+		if (base.X < Level.Bounds.Left + 10)
 		{
 			MoveH(32f * Engine.DeltaTime);
 		}
@@ -488,7 +488,7 @@ public class PowBlock : Actor
 		if (templeGate != null && entity != null)
 		{
 			templeGate.Collidable = false;
-			MoveH((float)(Math.Sign(entity.X - base.X) * 32) * Engine.DeltaTime);
+			MoveH(Math.Sign(entity.X - base.X) * 32 * Engine.DeltaTime);
 			templeGate.Collidable = true;
 		}
 	}

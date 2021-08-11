@@ -2,16 +2,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
-using Celeste;
-using Celeste.Mod;
 using Celeste.Mod.Entities;
-using Celeste.Mod.Meta;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Monocle;
-using MonoMod;
 using MonoMod.Utils;
 
 namespace Celeste.Mod.JackalHelper.Entities
@@ -107,10 +101,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 			sprite.Play("spin");
 			sprite.OnLoop = delegate (string anim)
 			{
-			//IL_0034: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0047: Unknown result type (might be due to invalid IL or missing references)
-			//IL_006f: Unknown result type (might be due to invalid IL or missing references)
-			if (Visible && anim == "spin" && autoPulse)
+				//IL_0034: Unknown result type (might be due to invalid IL or missing references)
+				//IL_0047: Unknown result type (might be due to invalid IL or missing references)
+				//IL_006f: Unknown result type (might be due to invalid IL or missing references)
+				if (Visible && anim == "spin" && autoPulse)
 				{
 					Audio.Play("event:/new_content/game/10_farewell/fakeheart_pulse", Position);
 
@@ -122,10 +116,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 			Add(new PlayerCollider(OnPlayer));
 			Add(ScaleWiggler = Wiggler.Create(0.5f, 4f, delegate (float f)
 			{
-			//IL_0006: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0018: Unknown result type (might be due to invalid IL or missing references)
-			//IL_001d: Unknown result type (might be due to invalid IL or missing references)
-			sprite.Scale = Vector2.One * (1f + f * 0.25f);
+				//IL_0006: Unknown result type (might be due to invalid IL or missing references)
+				//IL_0018: Unknown result type (might be due to invalid IL or missing references)
+				//IL_001d: Unknown result type (might be due to invalid IL or missing references)
+				sprite.Scale = Vector2.One * (1f + f * 0.25f);
 			}));
 			Add(bloom = new BloomPoint(0.75f, 16f));
 			Color val;
@@ -311,19 +305,19 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}));
 			List<InvisibleBarrier> list = walls;
 			Rectangle bounds = level.Bounds;
-			float num = (float)((Rectangle)(bounds)).Right;
+			float num = bounds.Right;
 			bounds = level.Bounds;
-			list.Add(new InvisibleBarrier(new Vector2(num, (float)((Rectangle)(bounds)).Top), 8f, level.Bounds.Height));
+			list.Add(new InvisibleBarrier(new Vector2(num, bounds.Top), 8f, level.Bounds.Height));
 			List<InvisibleBarrier> list2 = walls;
 			bounds = level.Bounds;
-			float num2 = ((Rectangle)(bounds)).Left - 8;
+			float num2 = bounds.Left - 8;
 			bounds = level.Bounds;
-			list2.Add(new InvisibleBarrier(new Vector2(num2, (float)((Rectangle)(bounds)).Top), 8f, level.Bounds.Height));
+			list2.Add(new InvisibleBarrier(new Vector2(num2, bounds.Top), 8f, level.Bounds.Height));
 			List<InvisibleBarrier> list3 = walls;
 			bounds = level.Bounds;
-			float num3 = (float)((Rectangle)(bounds)).Left;
+			float num3 = bounds.Left;
 			bounds = level.Bounds;
-			list3.Add(new InvisibleBarrier(new Vector2(num3, (float)(((Rectangle)(bounds)).Top - 8)), level.Bounds.Width, 8f));
+			list3.Add(new InvisibleBarrier(new Vector2(num3, bounds.Top - 8), level.Bounds.Width, 8f));
 			foreach (InvisibleBarrier wall in walls)
 			{
 				Scene.Add(wall);
@@ -408,7 +402,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 			player.Depth = 0;
 			JackalModule.Session.hasGrapple = true;
-			
+
 			EndCutscene();
 		}
 	}
@@ -468,7 +462,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private VirtualRenderTarget temp;
 
-		
+
 
 		public Color Color
 		{
@@ -492,7 +486,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			poem = VirtualContent.CreateRenderTarget("poem-a", num, num2);
 			smoke = VirtualContent.CreateRenderTarget("poem-b", num / 2, num2 / 2);
 			temp = VirtualContent.CreateRenderTarget("poem-c", num / 2, num2 / 2);
-			base.Tag = (int)Tags.HUD | (int)Tags.FrozenUpdate;
+			base.Tag = Tags.HUD | Tags.FrozenUpdate;
 			Add(new BeforeRenderHook(BeforeRender));
 		}
 
@@ -530,7 +524,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				Engine.Graphics.GraphicsDevice.SetRenderTarget(poem);
 				Engine.Graphics.GraphicsDevice.Clear(Color.Transparent);
-				Matrix transformationMatrix = Matrix.CreateScale((float)poem.Width / 1920f);
+				Matrix transformationMatrix = Matrix.CreateScale(poem.Width / 1920f);
 				Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, null, null, null, transformationMatrix);
 				Heart.Position = Offset + new Vector2(1920f, 1080f) * 0.5f;
 				Heart.Scale = Vector2.One * (1f + Shake * 0.1f);
@@ -548,8 +542,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 				Draw.SpriteBatch.End();
 				Engine.Graphics.GraphicsDevice.SetRenderTarget(smoke);
 				Engine.Graphics.GraphicsDevice.Clear(Color.Transparent);
-				MagicGlow.Render((RenderTarget2D)poem, timer, -1f, Matrix.CreateScale(0.5f));
-				GaussianBlur.Blur((RenderTarget2D)smoke, temp, smoke);
+				MagicGlow.Render(poem, timer, -1f, Matrix.CreateScale(0.5f));
+				GaussianBlur.Blur(smoke, temp, smoke);
 			}
 		}
 
@@ -557,9 +551,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			if (!disposed && !base.Scene.Paused)
 			{
-				float num = 1920f / (float)poem.Width;
-				Draw.SpriteBatch.Draw((RenderTarget2D)smoke, Vector2.Zero, smoke.Bounds, Color.White * 0.3f * Alpha, 0f, Vector2.Zero, num * 2f, SpriteEffects.None, 0f);
-				Draw.SpriteBatch.Draw((RenderTarget2D)poem, Vector2.Zero, poem.Bounds, Color.White * Alpha, 0f, Vector2.Zero, num, SpriteEffects.None, 0f);
+				float num = 1920f / poem.Width;
+				Draw.SpriteBatch.Draw(smoke, Vector2.Zero, smoke.Bounds, Color.White * 0.3f * Alpha, 0f, Vector2.Zero, num * 2f, SpriteEffects.None, 0f);
+				Draw.SpriteBatch.Draw(poem, Vector2.Zero, poem.Bounds, Color.White * Alpha, 0f, Vector2.Zero, num, SpriteEffects.None, 0f);
 			}
 		}
 

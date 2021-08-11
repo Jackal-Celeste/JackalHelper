@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -64,7 +59,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			this.alwaysBumperBoost = alwaysBumperBoost;
 			this.wobble = wobble;
-			this.startPos = Position;
+			startPos = Position;
 			positionNodes = new Vector2[nodes.Length];
 			outlines = new Sprite[nodes.Length];
 
@@ -219,11 +214,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 				else
 				{
 					vector.Y = 1f * Math.Sign(displacement.Y);
-					
+
 				}
 				player.AutoJump = false;
-				
-				
+
+
 			}
 			Vector2 speed = vector * 350f;
 			if (!player.Inventory.NoRefills)

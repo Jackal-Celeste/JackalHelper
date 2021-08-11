@@ -2,11 +2,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
@@ -63,7 +61,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				DrawCogs(Vector2.UnitY, JackalModule.Session.color);
 				DrawCogs(Vector2.Zero, JackalModule.Session.color);
-				
+
 				if (ZipMover.drawBlackBorder)
 				{
 					Draw.Rect(new Rectangle((int)(ZipMover.X + ZipMover.Shake.X - 1f), (int)(ZipMover.Y + ZipMover.Shake.Y - 1f), (int)ZipMover.Width + 2, (int)ZipMover.Height + 2), JackalModule.Session.color);
@@ -103,9 +101,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private float percent = 0f;
 
-		private static  Color ropeColor = Calc.HexToColor("000000") * 0f;
+		private static Color ropeColor = Calc.HexToColor("000000") * 0f;
 
-		private static  Color ropeLightColor = Calc.HexToColor("ffffff");
+		private static Color ropeLightColor = Calc.HexToColor("ffffff");
 
 		private SoundSource sfx = new SoundSource();
 
@@ -179,7 +177,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Render()
 		{
-			
+
 			Vector2 position = Position;
 			streetlight.Color = JackalModule.Session.color;
 			Position += base.Shake;
@@ -187,12 +185,12 @@ namespace Celeste.Mod.JackalHelper.Entities
 			int num = 1;
 			float num2 = 0f;
 			int count = innerCogs.Count;
-			for (int i = 4; (float)i <= base.Height - 4f; i += 8)
+			for (int i = 4; i <= base.Height - 4f; i += 8)
 			{
 				int num3 = num;
-				for (int j = 4; (float)j <= base.Width - 4f; j += 8)
+				for (int j = 4; j <= base.Width - 4f; j += 8)
 				{
-					int index = (int)(mod((num2 + (float)num * percent * (float)Math.PI * 4f) / ((float)Math.PI / 2f), 1f) * (float)count);
+					int index = (int)(mod((num2 + num * percent * (float)Math.PI * 4f) / ((float)Math.PI / 2f), 1f) * count);
 					MTexture mTexture = innerCogs[index];
 					Rectangle rectangle = new Rectangle(0, 0, mTexture.Width, mTexture.Height);
 					Vector2 zero = Vector2.Zero;
@@ -202,7 +200,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 						rectangle.X = 2;
 						rectangle.Width -= 2;
 					}
-					else if ((float)j >= base.Width - 4f)
+					else if (j >= base.Width - 4f)
 					{
 						zero.X = -2f;
 						rectangle.Width -= 2;
@@ -213,7 +211,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 						rectangle.Y = 2;
 						rectangle.Height -= 2;
 					}
-					else if ((float)i >= base.Height - 4f)
+					else if (i >= base.Height - 4f)
 					{
 						zero.Y = -2f;
 						rectangle.Height -= 2;
@@ -228,15 +226,15 @@ namespace Celeste.Mod.JackalHelper.Entities
 					num = -num;
 				}
 			}
-			for (int k = 0; (float)k < base.Width / 8f; k++)
+			for (int k = 0; k < base.Width / 8f; k++)
 			{
-				for (int l = 0; (float)l < base.Height / 8f; l++)
+				for (int l = 0; l < base.Height / 8f; l++)
 				{
-					int num4 = ((k != 0) ? (((float)k != base.Width / 8f - 1f) ? 1 : 2) : 0);
-					int num5 = ((l != 0) ? (((float)l != base.Height / 8f - 1f) ? 1 : 2) : 0);
+					int num4 = ((k != 0) ? ((k != base.Width / 8f - 1f) ? 1 : 2) : 0);
+					int num5 = ((l != 0) ? ((l != base.Height / 8f - 1f) ? 1 : 2) : 0);
 					if (num4 != 1 || num5 != 1)
 					{
-						edges[num4, num5].Draw(new Vector2(base.X + (float)(k * 8), base.Y + (float)(l * 8)));
+						edges[num4, num5].Draw(new Vector2(base.X + k * 8, base.Y + l * 8));
 					}
 				}
 			}
@@ -345,17 +343,17 @@ namespace Celeste.Mod.JackalHelper.Entities
 		}
 
 		public bool collideCheck()
-        {
-			if(JackalModule.GetPlayer() != null)
-            {
-				return (this.CollideCheck<Player>(Position - 4*Vector2.UnitX)) || (this.CollideCheck<Player>(Position + new Vector2(0f, (float)Height) - 4*Vector2.UnitX)) || (this.CollideCheck<Player>(Position + 4*Vector2.UnitX)) || (this.CollideCheck<Player>(Position + new Vector2(0, Height) + 4*Vector2.UnitX)) || (this.CollideCheck<Player>(Position + new Vector2(0, Height/2) + 4*Vector2.UnitX)) || (this.CollideCheck<Player>(Position + new Vector2(0, Height/2) - 4*Vector2.UnitX));
+		{
+			if (JackalModule.GetPlayer() != null)
+			{
+				return (CollideCheck<Player>(Position - 4 * Vector2.UnitX)) || (CollideCheck<Player>(Position + new Vector2(0f, (float)Height) - 4 * Vector2.UnitX)) || (CollideCheck<Player>(Position + 4 * Vector2.UnitX)) || (CollideCheck<Player>(Position + new Vector2(0, Height) + 4 * Vector2.UnitX)) || (CollideCheck<Player>(Position + new Vector2(0, Height / 2) + 4 * Vector2.UnitX)) || (CollideCheck<Player>(Position + new Vector2(0, Height / 2) - 4 * Vector2.UnitX));
 			}
-            else
-            {
+			else
+			{
 				return false;
-            }
+			}
 
-        }
+		}
 
 		private float mod(float x, float m)
 		{
