@@ -91,8 +91,10 @@ public class JackalModule : EverestModule
         On.Celeste.GFX.Load += GFX_Load;
         On.Celeste.DeathsCounter.SetMode += SetDeathsCounterIcon;
         On.Celeste.HeartGemDisplay.SetCurrentMode += HeartGemDisplay_SetCurrentMode;
-        On.Celeste.HeartGemDisplay.ctor += HeartGemDisplay_ctor;
-        On.Celeste.HeartGemDisplay.Render += HeartGemDisplay_Render;
+        //On.Celeste.HeartGemDisplay.ctor += HeartGemDisplay_ctor;
+        //On.Celeste.HeartGemDisplay.Render += HeartGemDisplay_Render;
+        On.Celeste.Player.OnCollideH += BouncyBoosterReflectH;
+        On.Celeste.Player.OnCollideV += BouncyBoosterReflectV;
         //On.Celeste.Booster.OnPlayer += pyroBoosterMelt;
         //IL.Celeste.OuiChapterPanel.Option.Render += CryoshockCustomTag3;
 
@@ -374,7 +376,6 @@ public class JackalModule : EverestModule
 
     private void HeartGemDisplay_ctor(On.Celeste.HeartGemDisplay.orig_ctor orig, HeartGemDisplay self, int heartGem, bool hasGem)
     {
-        orig.Invoke(self, heartGem, hasGem);
         if (self.Entity is OuiChapterPanel panel)
         {
             if (CryoshockCustomTag2(out OuiChapterPanel p))
@@ -384,20 +385,21 @@ public class JackalModule : EverestModule
                     if (p.Area.LevelSet == "Jackal/Cryoshock")
                     {
 
-                        if (p.Area.SID == "Jackal/Cryoshock/Cryoshock-D")
-                        {
-                            Sprite[] sprites = new Sprite[3];
-                            sprites[0] = sprites[1] = sprites[2] = JackalModule.guiSpriteBank.Create("heartCryo");
-                            sprites[0].Scale = Vector2.One;
-                            //sprites[0].Visible = false;
-                            //sprites[2].Visible = false;
-                            new DynData<HeartGemDisplay>(self).Set("Sprites", sprites);
+                        //if (p.Area.SID == "Jackal/Cryoshock/Cryoshock-D")
+                        //{
+                        Sprite[] sprites = new Sprite[3];
+                        sprites[0] = sprites[1] = sprites[2] = JackalModule.guiSpriteBank.Create("heartCryo");
+                        sprites[0].Scale = Vector2.One;
+                        //sprites[2].Visible = false;
+                        new DynData<HeartGemDisplay>(self).Get<Sprite[]>("Sprites")[2] = JackalModule.guiSpriteBank.Create("heartCryo");
+                        new DynData<HeartGemDisplay>(self).Set("Sprites", sprites);
 
-                        }
+                        //}
                     }
                 }
             }
         }
+        orig.Invoke(self, heartGem, hasGem);
     }
 
     public void HeartGemDisplay_Render(On.Celeste.HeartGemDisplay.orig_Render orig, HeartGemDisplay self)
@@ -441,16 +443,16 @@ public class JackalModule : EverestModule
                 {
                     if (p.Area.LevelSet == "Jackal/Cryoshock")
                     {
-                        
+
                         if (p.Area.SID == "Jackal/Cryoshock/Cryoshock-D")
                         {
+                        
                             Sprite[] sprites = new Sprite[3];
                             sprites[0] = sprites[1] = sprites[2] = JackalModule.guiSpriteBank.Create("heartCryo");
                             sprites[0].Scale = Vector2.One;
-                            //sprites[2].Visible = false;
                             new DynData<HeartGemDisplay>(self).Set("Sprites", sprites);
 
-                       }
+                        }
                     }
                 }
             }
@@ -822,6 +824,38 @@ public class JackalModule : EverestModule
 
 
 
+    public Vector2 floorBounce(Vector2 input)
+    {
+        return new Vector2(input.X, -input.Y);
+    }
+
+    public Vector2 wallBounce(Vector2 input)
+    {
+        return new Vector2(-input.X, input.Y);
+    }
+    public void BouncyBoosterReflectH(On.Celeste.Player.orig_OnCollideH orig, Player self, CollisionData data)
+    {
+        if(self.StateMachine.State == 5 && GetLevel().Tracker.GetEntities<BouncyBooster>().Count > 1)
+        {
+            self.Speed = wallBounce(self.Speed);
+        }
+        else
+        {
+            orig.Invoke(self, data);
+        }
+    }
+
+    public void BouncyBoosterReflectV(On.Celeste.Player.orig_OnCollideV orig, Player self, CollisionData data)
+    {
+        if (self.StateMachine.State == 5 && GetLevel().Tracker.GetEntities<BouncyBooster>().Count > 1)
+        {
+            self.Speed = floorBounce(self.Speed);
+        }
+        else
+        {
+            orig.Invoke(self, data);
+        }
+    }
 
 
     private void CryoDashEnd(On.Celeste.Player.orig_DashEnd orig, Player self)
@@ -952,15 +986,16 @@ public class JackalModule : EverestModule
         On.Celeste.Player.Update -= grappleUpdate;
         On.Celeste.Level.Render -= bloodRender;
         On.Celeste.CrystalStaticSpinner.Destroy -= optimizeDestroy;
-       // On.Celeste.HeartGemDisplay.ctor -= HeartGemDisplay_ctor;
         //On.Celeste.HeartGemDisplay.Update -= HeartGemDisplay_Update;
         On.Celeste.GFX.Load -= GFX_Load;
         On.Celeste.DeathsCounter.SetMode -= SetDeathsCounterIcon;
         //On.Celeste.Player.Die -= visible;
         On.Celeste.HeartGemDisplay.SetCurrentMode -= HeartGemDisplay_SetCurrentMode;
-        On.Celeste.HeartGemDisplay.ctor -= HeartGemDisplay_ctor;
-        On.Celeste.HeartGemDisplay.Render -= HeartGemDisplay_Render;
+        //On.Celeste.HeartGemDisplay.ctor -= HeartGemDisplay_ctor;
+        //.Celeste.HeartGemDisplay.Render -= HeartGemDisplay_Render;
         //IL.Celeste.OuiChapterPanel.Option.Render -= CryoshockCustomTag3;
+        On.Celeste.Player.OnCollideH -= BouncyBoosterReflectH;
+        On.Celeste.Player.OnCollideV -= BouncyBoosterReflectV;
     }
 
 

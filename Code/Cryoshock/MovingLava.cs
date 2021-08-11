@@ -63,6 +63,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				maskOffset = new Vector2(-350f + Width, 0);
             }
 			Depth = -1500000;
+			mask.Visible = false;
 		}
 
 		public MovingLava(EntityData data, Vector2 offset) : this(data.Position + offset, data.Width, data.Height, data.Float("linSpeedY", defaultValue: 0f), data.Float("linSpeedX", defaultValue: 0f), data.Float("sineAmplitudeY", defaultValue: 0f), data.Float("sineFrequencyY", defaultValue: 0f), data.Float("sineAmplitudeX", defaultValue: 0f), data.Float("sineFrequencyX", defaultValue: 0f), data.Float("flagLinSpeedY", defaultValue: 0f), data.Float("flagLinSpeedX", defaultValue: 0f), data.Float("flagSineAmplitudeY", defaultValue: 0f), data.Float("flagSineFrequencyY", defaultValue: 0f), data.Float("flagSineAmplitudeX", defaultValue: 0f), data.Float("flagSineFrequencyX", defaultValue: 0f), data.Attr("flag", ""), data.Attr("flagToStart", ""))
@@ -103,7 +104,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 			Collidable = true;
 			mask.Position = this.Position + maskOffset;
-			mask.Visible = true;
+			mask.Visible = false;
 			mask.FlipX = false;
 			mask.Play("boost");
 			//mask.Active = true;
