@@ -3,7 +3,7 @@ using System.Collections;
 using System.Reflection;
 using Monocle;
 
-namespace Celeste.Mod.JackalHelper.Entities
+namespace Celeste.Mod.JackalHelper
 {
 	public static class StateMachineExt
 	{
