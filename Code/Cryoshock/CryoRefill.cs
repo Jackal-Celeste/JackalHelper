@@ -6,22 +6,17 @@ using Monocle;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
-
-
 	[CustomEntity("JackalHelper/CryoRefill")]
 	[Tracked]
 	public class CryoRefill : Entity
 	{
 		private Sprite sprite;
-
 		private Sprite flash;
-
 		private Image outline;
 
 		private Wiggler wiggler;
 
 		private BloomPoint bloom;
-
 		private VertexLight light;
 
 		private Level level;
@@ -31,9 +26,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		private bool oneUse;
 
 		private ParticleType p_shatter;
-
 		private ParticleType p_regen;
-
 		private ParticleType p_glow;
 
 		private float respawnTimer;
@@ -55,16 +48,18 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public CryoRefill(Vector2 position, bool oneUse, bool refillDash, bool addDash, float radius)
 			: base(position)
 		{
-			JackalModule.Session.CryoRadius = radius;
-			base.Collider = new Hitbox(16f, 16f, -8f, -8f);
-			Add(new PlayerCollider(OnPlayer));
 			this.oneUse = oneUse;
 			this.refillDash = refillDash;
 			this.addDash = addDash;
+
+			// COLOURSOFNOISE: This is a bad idea because putting multiple refills in one room with different radiuses will not work properly
+			JackalModule.Session.CryoRadius = radius;
+
+			Depth = Depths.Pickups;
+			Collider = new Hitbox(16f, 16f, -8f, -8f);
+			Add(new PlayerCollider(OnPlayer));
+
 			string str = "objects/refillCryo/";
-			p_shatter = Refill.P_Shatter;
-			p_regen = Refill.P_Regen;
-			p_glow = Refill.P_Glow;
 			Add(outline = new Image(GFX.Game[str + "outline"]));
 			outline.CenterOrigin();
 			outline.Visible = false;
@@ -79,6 +74,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				flash.Visible = false;
 			};
 			flash.CenterOrigin();
+
 			Add(wiggler = Wiggler.Create(1f, 4f, delegate (float v)
 			{
 				sprite.Scale = (flash.Scale = Vector2.One * (1f + v * 0.2f));
@@ -86,10 +82,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 			Add(new MirrorReflection());
 			Add(bloom = new BloomPoint(0.8f, 16f));
 			Add(light = new VertexLight(Color.White, 1f, 16, 48));
-			Add(sine = new SineWave(0.6f));
-			sine.Randomize();
-			//UpdateY();
-			base.Depth = -100;
+			Add(sine = new SineWave(0.6f).Randomize());
+
+			p_shatter = Refill.P_Shatter;
+			p_regen = Refill.P_Regen;
+			p_glow = Refill.P_Glow;
 		}
 
 		public CryoRefill(EntityData data, Vector2 offset)
@@ -99,10 +96,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Update()
 		{
-
-			if (JackalModule.GetPlayer() != null)
+			if (JackalModule.TryGetPlayer(out Player player))
 			{
-				if (JackalModule.GetPlayer().StateMachine.State != 2 && JackalModule.Session.dashQueue)
+				if (player.StateMachine.State != Player.StDash && JackalModule.Session.dashQueue)
 				{
 					JackalModule.Session.dashQueue = false;
 				}
@@ -114,14 +110,14 @@ namespace Celeste.Mod.JackalHelper.Entities
 						Respawn();
 					}
 				}
-				else if (base.Scene.OnInterval(0.1f) && JackalModule.GetLevel() != null)
+				else if (Scene.OnInterval(0.1f) && JackalModule.GetLevel() != null)
 				{
 					//JackalModule.GetLevel().ParticlesFG.Emit(p_glow, 1, Position, Vector2.One * 5f);
 				}
 				UpdateY();
 				light.Alpha = Calc.Approach(light.Alpha, sprite.Visible ? 1f : 0f, 4f * Engine.DeltaTime);
 				bloom.Alpha = light.Alpha * 0.8f;
-				if (base.Scene.OnInterval(2f) && sprite.Visible)
+				if (Scene.OnInterval(2f) && sprite.Visible)
 				{
 					flash.Play("flash", restart: true);
 					flash.Visible = true;
@@ -130,9 +126,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 			pityTimer();
 			base.Update();
 		}
-
-
-
 
 		public void pityTimer()
 		{
@@ -156,7 +149,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				Collidable = true;
 				sprite.Visible = true;
 				outline.Visible = false;
-				base.Depth = -100;
+				Depth = Depths.Pickups;
 				wiggler.Start();
 				Audio.Play("event:/game/general/diamond_return", Position);
 				//level.ParticlesFG.Emit(p_regen, 16, Position, Vector2.One * 2f);
@@ -165,13 +158,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private void UpdateY()
 		{
-			Sprite sprite = flash;
-			Sprite sprite2 = this.sprite;
-			float num2 = bloom.Y = sine.Value * 2f;
-			float num3 = num2;
-			float num5 = sprite2.Y = num3;
-			num2 = (sprite.Y = num5);
-			float num7 = num2;
+			flash.Y = sprite.Y = bloom.Y = sine.Value * 2f;
 		}
 
 		public override void Render()
@@ -193,7 +180,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 				}
 
 				JackalModule.Session.HasCryoDash = true;
-				if (player.StateMachine.State == 2 || player.StateMachine.State == JackalModule.CryoBoostState || player.StateMachine.State == 4 || player.StateMachine.State == 5)
+				if (player.StateMachine.State == Player.StDash || 
+					player.StateMachine.State == JackalModule.CryoBoostState || 
+					player.StateMachine.State == Player.StBoost || 
+					player.StateMachine.State == Player.StRedDash)
 				{
 					JackalModule.Session.dashQueue = true;
 				}
@@ -222,7 +212,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				outline.Visible = true;
 			}
-			base.Depth = 8999;
+			Depth = 8999;
 			yield return 0.05f;
 			float num = player.Speed.Angle();
 			//level.ParticlesFG.Emit(p_shatter, 5, Position, Vector2.One * 4f, num - (float)Math.PI / 2f);
