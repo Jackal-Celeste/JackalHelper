@@ -140,7 +140,7 @@ namespace Celeste.Mod.JackalHelper
 		private void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position, PlayerSpriteMode spriteMode)
 		{
 			orig.Invoke(self, position, spriteMode);
-			CryoBoostState = self.StateMachine.AddState(CryoBooster.CryoBoostUpdate, CryoBooster.CryoBoostCoroutine, CryoBooster.CryoBoostBegin, CryoBooster.CryoBoostEnd);
+			CryoBoostState = self.StateMachine.AddState(self.CryoBoostUpdate, self.CryoBoostCoroutine, self.CryoBoostBegin, self.CryoBoostEnd);
 			BraveBirdState = self.StateMachine.AddState(BraveBird.BraveBirdUpdate, BraveBird.BraveBirdCoroutine, BraveBird.BraveBirdBegin, BraveBird.BraveBirdEnd);
 			AltbraveBirdState = self.StateMachine.AddState(AltBraveBird.AltBraveBirdUpdate, AltBraveBird.AltBraveBirdCoroutine, AltBraveBird.AltBraveBirdBegin, AltBraveBird.AltBraveBirdEnd);
 			CustomRedBoostState = self.StateMachine.AddState(CustomRedBoost.Update, CustomRedBoost.Coroutine, CustomRedBoost.Begin, CustomRedBoost.End);
@@ -211,7 +211,7 @@ namespace Celeste.Mod.JackalHelper
 		{
 			foreach (CryoBooster b2 in player.Scene.Tracker.GetEntities<CryoBooster>())
 			{
-				b2.timer = 0f;
+				b2.FreezeTimer = 0f;
 			}
 			Session.CryoDashActive = false;
 			Session.HasCryoDash = false;
@@ -345,7 +345,7 @@ namespace Celeste.Mod.JackalHelper
 					if (entity.FrozenDash)
 					{
 						Vector2 scale = new Vector2(Math.Abs(self.Sprite.Scale.X) * (float)self.Facing, self.Sprite.Scale.Y);
-						TrailManager.Add(self, scale, (Color.SkyBlue * ((entity.freezeTime - entity.timer) / entity.freezeTime)));
+						TrailManager.Add(self, scale, (Color.SkyBlue * ((entity.FreezeTime - entity.FreezeTimer) / entity.FreezeTime)));
 					}
 				}
 			}
@@ -540,7 +540,7 @@ namespace Celeste.Mod.JackalHelper
 					return true;
 				}
 			}
-			else
+			else if (recent != null)
 			{
 				panel = recent;
 				return true;
