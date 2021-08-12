@@ -65,7 +65,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				player = level.Tracker.GetEntity<Player>();
 
-				Collidable = (JackalModule.GetPlayer() != null) && (JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive || cryoBoosting || player.StateMachine.State == JackalModule.cryoBoostState) && (Vector2.DistanceSquared(player.Position, center) < Math.Pow(JackalModule.Session.CryoRadius, 2.0));
+				Collidable = (JackalModule.GetPlayer() != null) && (JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive || cryoBoosting || player.StateMachine.State == JackalModule.CryoBoostState) && (Vector2.DistanceSquared(player.Position, center) < Math.Pow(JackalModule.Session.CryoRadius, 2.0));
 				Visible = (JackalModule.GetPlayer() != null);
 			}
 			base.Update();

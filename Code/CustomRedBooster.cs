@@ -251,7 +251,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				state = player.StateMachine.State;
 			}
-			if (player == null && JackalModule.Session.lastBooster == this && state == JackalModule.customRedBoostState)
+			if (player == null && JackalModule.Session.lastBooster == this && state == JackalModule.CustomRedBoostState)
 			{
 				sprite.Play("pop");
 				//Visible = false;
@@ -316,7 +316,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public static void CustomRedBoost(Player player, CustomRedBooster booster)
 		{
-			player.StateMachine.State = JackalModule.customRedBoostState;
+			player.StateMachine.State = JackalModule.CustomRedBoostState;
 			player.Position = booster.Center;
 			player.Speed = Vector2.Zero;
 			new DynData<Player>(player).Set("boostTarget", booster.Center);
@@ -342,7 +342,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		private IEnumerator BoostRoutine(Player player, Vector2 dir)
 		{
 			float angle = (-dir).Angle();
-			while ((player.StateMachine.State == JackalModule.customRedBoostState || player.StateMachine.State == 2) && BoostingPlayer)
+			while ((player.StateMachine.State == JackalModule.CustomRedBoostState || player.StateMachine.State == 2) && BoostingPlayer)
 			{
 				sprite.RenderPosition = player.Center + playerOffset;
 				loopingSfx.Position = sprite.Position;

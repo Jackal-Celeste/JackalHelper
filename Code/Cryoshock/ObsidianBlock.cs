@@ -95,7 +95,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				if (JackalModule.GetPlayer() != null)
 				{
 					Vector2 min = nearestEdge(JackalModule.GetPlayer(), out float distance);
-					if (distance < coolDistance && (JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive || JackalModule.GetPlayer().StateMachine.State == JackalModule.cryoBoostState))
+					if (distance < coolDistance && (JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive || JackalModule.GetPlayer().StateMachine.State == JackalModule.CryoBoostState))
 					{
 						safe = true;
 					}
@@ -111,7 +111,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				Vector2 min = nearestEdge(JackalModule.GetPlayer(), out float p);
 
 
-				bool inRange = (JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive || JackalModule.GetPlayer().StateMachine.State == JackalModule.cryoBoostState);
+				bool inRange = (JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive || JackalModule.GetPlayer().StateMachine.State == JackalModule.CryoBoostState);
 				if (p < (4 * coolDistance) && inRange)
 				{
 					solidData = new DynData<FireBarrier>(this);

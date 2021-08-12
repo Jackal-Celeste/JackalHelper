@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -12,6 +13,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 	[Tracked]
 	public class CryoBooster : Entity
 	{
+		private static FieldInfo player_boostTarget = typeof(Player).GetField("boostTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+
 		public string reappearSfx;
 
 		public string enterSfx;
@@ -246,9 +249,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public static void Boost(Player player, CryoBooster booster)
 		{
-			player.StateMachine.State = JackalModule.cryoBoostState;
+			player.StateMachine.State = JackalModule.CryoBoostState;
 			player.Speed = Vector2.Zero;
-			JackalModule.player_boostTarget.SetValue(player, booster.Center);
+			player_boostTarget.SetValue(player, booster.Center);
 			booster.StartedBoosting = true;
 		}
 
@@ -375,7 +378,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 			if (JackalModule.GetPlayer() != null && JackalModule.GetLevel() != null)
 			{
-				if (JackalModule.GetPlayer().StateMachine.State == JackalModule.cryoBoostState)
+				if (JackalModule.GetPlayer().StateMachine.State == JackalModule.CryoBoostState)
 				{
 					FrozenDash = true;
 				}
@@ -458,7 +461,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			//IL_005c: Unknown result type (might be due to invalid IL or missing references)
 			//IL_006a: Unknown result type (might be due to invalid IL or missing references)
 			Player player = JackalModule.GetPlayer();
-			Vector2 boostTarget = (Vector2)JackalModule.player_boostTarget.GetValue(player);
+			Vector2 boostTarget = (Vector2)player_boostTarget.GetValue(player);
 			Vector2 value = Input.Aim.Value * 3f;
 			Vector2 vector = Calc.Approach(player.ExactPosition, boostTarget - player.Collider.Center + value, 80f * Engine.DeltaTime);
 			player.MoveToX(vector.X);
@@ -470,7 +473,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				return 2;
 			}
 			JackalModule.Session.HasCryoDash = hasCryoDash;
-			return JackalModule.cryoBoostState;
+			return JackalModule.CryoBoostState;
 		}
 
 		public static void CryoBoostEnd()
@@ -485,7 +488,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			//IL_0030: Unknown result type (might be due to invalid IL or missing references)
 			//IL_003e: Unknown result type (might be due to invalid IL or missing references)
 			Player player = JackalModule.GetPlayer();
-			Vector2 boostTarget = (Vector2)JackalModule.player_boostTarget.GetValue(player);
+			Vector2 boostTarget = (Vector2)player_boostTarget.GetValue(player);
 			Vector2 vector = (boostTarget - player.Collider.Center).Floor();
 			player.MoveToX(vector.X);
 			player.MoveToY(vector.Y);

@@ -185,9 +185,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public bool DoFlingBird(Player player, BraveBird bird)
 		{
-			if (!player.Dead && player.StateMachine.State != JackalModule.braveBirdState)
+			if (!player.Dead && player.StateMachine.State != JackalModule.BraveBirdState)
 			{
-				player.StateMachine.State = JackalModule.braveBirdState;
+				player.StateMachine.State = JackalModule.BraveBirdState;
 				if (player.Holding != null)
 				{
 					player.Drop();
@@ -391,7 +391,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 			player.MoveTowardsX(level.Tracker.GetNearestEntity<BraveBird>(player.Position).Position.X, 250f * Engine.DeltaTime);
 			player.MoveTowardsY(level.Tracker.GetNearestEntity<BraveBird>(player.Position).Position.Y + 8f + player.Collider.Height, 250f * Engine.DeltaTime);
-			return JackalModule.braveBirdState;
+			return JackalModule.BraveBirdState;
 		}
 
 		public void FinishFlingBird()

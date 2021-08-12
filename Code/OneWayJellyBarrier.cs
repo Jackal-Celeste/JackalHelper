@@ -74,30 +74,18 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				particles.Add(new Vector2(Calc.Random.NextFloat(base.Width - 1f), Calc.Random.NextFloat(base.Height - 1f)));
 			}
-			switch (direction)
+			switch (direction.ToLower())
 			{
 				case "up":
-					dir = 'U';
-					break;
-				case "Up":
 					dir = 'U';
 					break;
 				case "down":
 					dir = 'D';
 					break;
-				case "Down":
-					dir = 'D';
-					break;
 				case "left":
 					dir = 'L';
 					break;
-				case "Left":
-					dir = 'L';
-					break;
 				case "right":
-					dir = 'R';
-					break;
-				case "Right":
 					dir = 'R';
 					break;
 				default:

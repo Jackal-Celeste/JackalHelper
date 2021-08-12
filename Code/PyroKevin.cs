@@ -177,7 +177,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public void CheckForCryoDash(Player player)
 		{
-			bool cryoD = (JackalModule.GetPlayer().StateMachine.State == JackalModule.cryoBoostState || JackalModule.Session.CryoDashActive || JackalModule.Session.HasCryoDash);
+			bool cryoD = (JackalModule.GetPlayer().StateMachine.State == JackalModule.CryoBoostState || JackalModule.Session.CryoDashActive || JackalModule.Session.HasCryoDash);
 			if (CollideCheck<Player>(Position + new Vector2(-1f, 0f)) || CollideCheck<Player>(Position + new Vector2(1f, 0f)) || CollideCheck<Player>(Position + new Vector2(0f, 1f)) || CollideCheck<Player>(Position + new Vector2(0f, -1f)))
 			{
 				if (!cryoD && !safe)
@@ -313,7 +313,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private DashCollisionResults OnDashed(Player player, Vector2 direction)
 		{
-			if (player.StateMachine.State == JackalModule.cryoBoostState || JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive)
+			if (player.StateMachine.State == JackalModule.CryoBoostState || JackalModule.Session.HasCryoDash || JackalModule.Session.CryoDashActive)
 			{
 				if (CanActivate(-direction))
 				{

@@ -80,7 +80,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				timer -= Engine.DeltaTime;
 				player.Center = new DynData<Player>(player).Get<Vector2>("boostTarget");
-				return JackalModule.customRedBoostState;
+				return JackalModule.CustomRedBoostState;
 			}
 			int num = (int)rdU.Invoke(player, new object[0]);
 			if (JackalModule.Session.lastBooster == null)
@@ -140,7 +140,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 			player.Sprite.Visible = (num != 5);
 			player.Hair.Visible = (num != 5);
-			return (num == 5) ? JackalModule.customRedBoostState : num;
+			return (num == 5) ? JackalModule.CustomRedBoostState : num;
 		}
 
 		public static void End()

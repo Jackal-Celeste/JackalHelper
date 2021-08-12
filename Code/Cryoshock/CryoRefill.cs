@@ -193,7 +193,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				}
 
 				JackalModule.Session.HasCryoDash = true;
-				if (player.StateMachine.State == 2 || player.StateMachine.State == JackalModule.cryoBoostState || player.StateMachine.State == 4 || player.StateMachine.State == 5)
+				if (player.StateMachine.State == 2 || player.StateMachine.State == JackalModule.CryoBoostState || player.StateMachine.State == 4 || player.StateMachine.State == 5)
 				{
 					JackalModule.Session.dashQueue = true;
 				}
