@@ -381,6 +381,13 @@ namespace Celeste.Mod.JackalHelper
 
 		private void grappleUpdate(On.Celeste.Player.orig_Update orig, Player self)
 		{
+			foreach (Follower follower in self.Leader.Followers)
+        	{
+            	if (follower.Entity is Strawberry && (follower.Entity as Strawberry).Golden)
+            	{
+                	GetLevel().Session.SetFlag("cryoGoldenRun", true); 
+            	}
+        	}
 			GrapplingHook hook;
 			if (Input.Grab.Pressed && Session.hasGrapple && !self.CollideCheck<Solid>(self.Position + (self.Facing == Facings.Right ? 16f : -16f) * Vector2.UnitX) && grappleRespawnTime < 0f)
 			{
