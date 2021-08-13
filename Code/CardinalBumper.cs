@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -6,7 +7,9 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
-	[CustomEntity("JackalHelper/CardinalBumper")]
+	[CustomEntity(
+		"JackalHelper/CardinalBumper",
+		"JackalHelper/LinkedCardinalBumper = LoadLinked")]
 	[Tracked]
 	public class CardinalBumper : Entity
 	{
@@ -14,6 +17,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public static ParticleType P_Launch;
 		public static ParticleType P_FireAmbience;
 		public static ParticleType P_FireHit;
+
+		public bool Linked = false;
 
 		public bool alwaysBumperBoost;
 		public bool wobble;
@@ -35,6 +40,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 		private VertexLight light;
 
 		private BloomPoint bloom;
+
+		public static Entity LoadLinked(Level level, LevelData levelData, Vector2 offset, EntityData data)
+		{
+			return new CardinalBumper(data, offset) { Linked = true };
+		}
 
 		public CardinalBumper(Vector2 position, Vector2[] nodes, bool alwaysBumperBoost, bool wobble, string spriteDirectory) 
 			: base(position)
@@ -82,11 +92,15 @@ namespace Celeste.Mod.JackalHelper.Entities
 			sprite.Visible = true;
 		}
 
-
 		private void UpdatePosition(Vector2 position)
 		{
+			// COLOURSOFNOISE: You really need to use Engine.DeltaTime for any movement/update stuff
 			Vector2 path = position - Position;
-			Position += path / 30f;
+			if (Math.Abs(path.X) < 0.5f && Math.Abs(path.Y) < 0.5f)
+				// Snap alignment to the grid when resting
+				Position = position;
+			else
+				Position += path / 0.5f * Engine.DeltaTime;
 		}
 
 		public override void Update()
@@ -188,6 +202,24 @@ namespace Celeste.Mod.JackalHelper.Entities
 			player.RefillStamina();
 			player.Speed = speed;
 
+			if (Linked)
+			{
+				foreach (CardinalBumper bumper in Scene.Tracker.GetEntities<CardinalBumper>())
+				{
+					if (bumper.Linked)
+					{
+						bumper.NextNode();
+					}
+				}
+			}
+			else
+			{
+				NextNode();
+			}
+		}
+
+		private void NextNode()
+		{
 			travelling = true;
 			if (positionNodes.Length > 1)
 			{
