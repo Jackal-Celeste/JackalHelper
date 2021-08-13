@@ -1,6 +1,4 @@
 ﻿// Celeste.Booster
-using System;
-using System.Collections;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -40,7 +38,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public ChromaBooster(Vector2 position, bool neo)
 			: base(position, false)
 		{
-			scene = this.Scene;
+			scene = Scene;
 			Player player = JackalModule.GetPlayer();
 			boostData = new DynData<Booster>(this);
 			playerData = new DynData<Player>(player);

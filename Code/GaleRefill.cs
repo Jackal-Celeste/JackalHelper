@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using Celeste;
+﻿using System.Collections;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -109,11 +107,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Update()
 		{
-            if (windNext)
-            {
+			if (windNext)
+			{
 				windNext = false;
 				//beginWind(lastPos);
-            }
+			}
 			base.Update();
 			if (respawnTimer > 0f)
 			{
@@ -126,11 +124,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 			UpdateY();
 			light.Alpha = Calc.Approach(light.Alpha, sprite.Visible ? 1f : 0f, 4f * Engine.DeltaTime);
 			bloom.Alpha = light.Alpha * 0.8f;
-			if(last ==  false && JackalModule.Session.GaleDashActive)
-            {
+			if (last == false && JackalModule.Session.GaleDashActive)
+			{
 				windNext = true;
 				lastPos = JackalModule.GetPlayer().Position;
-            }
+			}
 			last = JackalModule.Session.GaleDashActive;
 		}
 

@@ -1,7 +1,5 @@
 ﻿// Celeste.Refill
-using System;
 using System.Collections;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -12,7 +10,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 	[Tracked]
 	[CustomEntity("JackalHelper/StarRefill")]
-	
+
 	public class StarRefill : Entity
 	{
 		public static ParticleType P_Shatter;
@@ -120,22 +118,22 @@ namespace Celeste.Mod.JackalHelper.Entities
 			bloom.Alpha = light.Alpha * 0.8f;
 			if (JackalModule.GetLevel() != null)
 			{
-				if(timeLeft < time && timeLeft > 0f)
-                {
+				if (timeLeft < time && timeLeft > 0f)
+				{
 					timeLeft -= Engine.DeltaTime;
 
-                }
-                else
-                {
+				}
+				else
+				{
 					timeLeft = time;
-                }
+				}
 
 				foreach (StarRefill refill in JackalModule.GetLevel().Tracker.GetEntities<StarRefill>())
 				{
-					if(refill.timeLeft > 0f && refill.timeLeft < refill.time)
-                    {
+					if (refill.timeLeft > 0f && refill.timeLeft < refill.time)
+					{
 						check = true;
-                    }
+					}
 				}
 				JackalModule.GetLevel().Session.SetFlag(flag, check);
 				check = false;
@@ -180,14 +178,14 @@ namespace Celeste.Mod.JackalHelper.Entities
 			Collidable = false;
 			Add(new Coroutine(RefillRoutine(player)));
 			respawnTimer = 2.5f;
-            if (refillDash)
-            {
+			if (refillDash)
+			{
 				player.RefillDash();
-            }
-            if (refillStamina)
-            {
+			}
+			if (refillStamina)
+			{
 				player.RefillStamina();
-            }
+			}
 			timeLeft -= Engine.DeltaTime;
 		}
 

@@ -1,21 +1,16 @@
-﻿using Microsoft.Xna.Framework;
-using Monocle;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Celeste.Mod.Entities;
-using MonoMod.Utils;
-using Celeste;
-using System.Threading;
-using System.Xml.Serialization;
-using FMOD;
+using Microsoft.Xna.Framework;
+using Monocle;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
 	[Tracked]
-    [CustomEntity("JackalHelper/HolySword")]
-    public class HolySword : Actor
-    {
+	[CustomEntity("JackalHelper/HolySword")]
+	public class HolySword : Actor
+	{
 
 		public static readonly Color TrailColor = Color.White;
 
@@ -163,10 +158,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 			path = new List<Vector2>();
 			base.IgnoreJumpThrus = true;
 			Add(sprite = GFX.SpriteBank.Create("seeker"));
-		
+
 			scaleWiggler = Wiggler.Create(0.8f, 2f);
 			Add(scaleWiggler);
-		
+
 		}
 
 		public HolySword(EntityData data, Vector2 offset)
@@ -225,7 +220,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 					spotted = true;
 					lastSpottedAt = entity.Center;
 				}
-				
+
 			}
 			if (lastPathTo != lastSpottedAt)
 			{
@@ -238,19 +233,19 @@ namespace Celeste.Mod.JackalHelper.Entities
 			MoveH(Speed.X * Engine.DeltaTime);
 			MoveV(Speed.Y * Engine.DeltaTime);
 			Level level = SceneAs<Level>();
-			if (base.Left < (float)level.Bounds.Left && Speed.X < 0f)
+			if (base.Left < level.Bounds.Left && Speed.X < 0f)
 			{
 				base.Left = level.Bounds.Left;
 			}
-			else if (base.Right > (float)level.Bounds.Right && Speed.X > 0f)
+			else if (base.Right > level.Bounds.Right && Speed.X > 0f)
 			{
 				base.Right = level.Bounds.Right;
 			}
-			if (base.Top < (float)(level.Bounds.Top + -8) && Speed.Y < 0f)
+			if (base.Top < level.Bounds.Top + -8 && Speed.Y < 0f)
 			{
 				base.Top = level.Bounds.Top + -8;
 			}
-			else if (base.Bottom > (float)level.Bounds.Bottom && Speed.Y > 0f)
+			else if (base.Bottom > level.Bounds.Bottom && Speed.Y > 0f)
 			{
 				base.Bottom = level.Bounds.Bottom;
 			}
@@ -258,8 +253,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				component.Check(this);
 			}
-			if(State.State != 3 && Speed.Length() < 12f)
-            {
+			if (State.State != 3 && Speed.Length() < 12f)
+			{
 				State.State = 0;
 				State.State = 3;
 				sprite.Rotation = (float)Math.Atan2(Position.Y - JackalModule.GetPlayer().Position.Y, Position.X - JackalModule.GetPlayer().Position.X);
@@ -276,7 +271,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 		}
 
-		
+
 
 		public override void Render()
 		{
@@ -287,15 +282,15 @@ namespace Celeste.Mod.JackalHelper.Entities
 			base.Render();
 			Position = position;
 			sprite.Scale = scale;
-			if(JackalModule.GetPlayer() != null)
-            {
+			if (JackalModule.GetPlayer() != null)
+			{
 				Player player = JackalModule.GetPlayer();
 				sprite.Rotation = (float)Math.Atan2(Position.Y - player.Position.Y, Position.X - player.Position.X);
-            }
-			
+			}
+
 		}
 
-	
+
 
 
 

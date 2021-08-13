@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -30,8 +26,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 {
 	[Tracked]
 	[CustomEntity("JackalHelper/CustomRedBooster")]
-    public class CustomRedBooster : Entity
-    {
+	public class CustomRedBooster : Entity
+	{
 		private const float RespawnTime = 1f;
 
 		public static ParticleType P_Burst;
@@ -113,7 +109,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			this.launchSpeed = launchSpeed;
 			this.decayRate = decayRate;
-			this.xSinAmp = xsinAmp;
+			xSinAmp = xsinAmp;
 			this.ySinAmp = ySinAmp;
 			this.xSinFreq = xSinFreq;
 			this.ySinFreq = ySinFreq;
@@ -121,14 +117,14 @@ namespace Celeste.Mod.JackalHelper.Entities
 			this.dashes = dashes;
 			this.canJump = canJump;
 			this.tint = tint;
-			if(Calc.HexToColor(tint) == null)
-            {
+			if (Calc.HexToColor(tint) == null)
+			{
 				tint = "ffffff";
-            }
-			if(dashes < 0)
-            {
+			}
+			if (dashes < 0)
+			{
 				dashes = 0;
-            }
+			}
 			base.Depth = -8500;
 			base.Collider = new Circle(10f, 0f, 2f);
 			red = true;
@@ -157,7 +153,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Added(Scene scene)
 		{
-			
+
 			base.Added(scene);
 			Image image = new Image(GFX.Game["objects/booster/outline"]);
 			image.CenterOrigin();
@@ -184,7 +180,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			ParticleSystem particlesBG = SceneAs<Level>().ParticlesBG;
 			for (int i = 0; i < 360; i += 30)
 			{
-				particlesBG.Emit(Booster.P_RedAppear, 1, base.Center, Vector2.One * 2f, (float)i * ((float)Math.PI / 180f));
+				particlesBG.Emit(Booster.P_RedAppear, 1, base.Center, Vector2.One * 2f, i * ((float)Math.PI / 180f));
 			}
 		}
 
@@ -251,11 +247,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public override void Update()
 		{
 			Player player = JackalModule.GetPlayer();
-			if(player != null)
-            {
+			if (player != null)
+			{
 				state = player.StateMachine.State;
-            }
-			if (player == null && JackalModule.Session.lastBooster ==  this && state == JackalModule.customRedBoostState)
+			}
+			if (player == null && JackalModule.Session.lastBooster == this && state == JackalModule.CustomRedBoostState)
 			{
 				sprite.Play("pop");
 				//Visible = false;
@@ -320,7 +316,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public static void CustomRedBoost(Player player, CustomRedBooster booster)
 		{
-			player.StateMachine.State = JackalModule.customRedBoostState;
+			player.StateMachine.State = JackalModule.CustomRedBoostState;
 			player.Position = booster.Center;
 			player.Speed = Vector2.Zero;
 			new DynData<Player>(player).Set("boostTarget", booster.Center);
@@ -334,7 +330,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			loopingSfx.Play("event:/game/05_mirror_temple/redbooster_move");
 			loopingSfx.DisposeOnTransition = false;
 			BoostingPlayer = true;
-			base.Tag = (int)Tags.Persistent | (int)Tags.TransitionUpdate;
+			base.Tag = Tags.Persistent | Tags.TransitionUpdate;
 			sprite.Play("spin");
 			sprite.FlipX = player.Facing == Facings.Left;
 			outline.Visible = true;
@@ -346,7 +342,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		private IEnumerator BoostRoutine(Player player, Vector2 dir)
 		{
 			float angle = (-dir).Angle();
-			while ((player.StateMachine.State == JackalModule.customRedBoostState || player.StateMachine.State == 2) && BoostingPlayer)
+			while ((player.StateMachine.State == JackalModule.CustomRedBoostState || player.StateMachine.State == 2) && BoostingPlayer)
 			{
 				sprite.RenderPosition = player.Center + playerOffset;
 				loopingSfx.Position = sprite.Position;

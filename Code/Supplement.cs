@@ -1,68 +1,63 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xna.Framework;
-using System.Text;
-using System.Threading.Tasks;
-using Celeste;
-using Monocle;
-using Celeste.Mod.Entities;
 using System.Collections;
 using System.Diagnostics;
+using Celeste.Mod.Entities;
+using Microsoft.Xna.Framework;
+using Monocle;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
-    [Tracked]
-    [CustomEntity("Lunaris/LunarisCutscene")]
-    public class LunarisCutscene : Entity
-    {
-        public LunarHeart decoy;
-        public float zoom = 1;
-        public BadelineBoostDown yeet;
+	[Tracked]
+	[CustomEntity("Lunaris/LunarisCutscene")]
+	public class LunarisCutscene : Entity
+	{
+		public LunarHeart decoy;
+		public float zoom = 1;
+		public BadelineBoostDown yeet;
 		public Vector2[] positions = new Vector2[1];
 
 		private Vector2 previousDiff;
-        public LunarisCutscene(Vector2 position) : base(position)
-        {
-        }
+		public LunarisCutscene(Vector2 position) : base(position)
+		{
+		}
 
-        public LunarisCutscene(EntityData data, Vector2 offset) : this(data.Position + offset)
-        {
+		public LunarisCutscene(EntityData data, Vector2 offset) : this(data.Position + offset)
+		{
 
-        }
-        public override void Awake(Scene scene)
-        {
-            this.Scene.Add(decoy = new LunarHeart(Position));
-            base.Awake(scene);
+		}
+		public override void Awake(Scene scene)
+		{
+			Scene.Add(decoy = new LunarHeart(Position));
+			base.Awake(scene);
 			positions[0] = Position - (Vector2.UnitY * 200f);
-			this.Scene.Add(yeet = new BadelineBoostDown(positions));
+			Scene.Add(yeet = new BadelineBoostDown(positions));
 			yeet.Visible = false;
 		}
 
-        public override void Update()
-        {
-            base.Update();
-            decoy.Position = Position;
-			
-            
-            if (GetPlayer() != null && GetLevel() != null)
-            {
-                if ((GetPlayer().Position - Position).Length() < 100f)
-                {
-                    float distance = (float)Math.Pow((GetPlayer().Position - Position).Length(), 0.5);
+		public override void Update()
+		{
+			base.Update();
+			decoy.Position = Position;
+
+
+			if (GetPlayer() != null && GetLevel() != null)
+			{
+				if ((GetPlayer().Position - Position).Length() < 100f)
+				{
+					float distance = (float)Math.Pow((GetPlayer().Position - Position).Length(), 0.5);
 					yeet.Position.Y = Position.Y + 2f;
-                }
-                else
-                {
-					
-                    zoom = 1f;
-                   // GetLevel().Camera.Zoom = 1f;
-                }
+				}
+				else
+				{
+
+					zoom = 1f;
+					// GetLevel().Camera.Zoom = 1f;
+				}
 				yeet.Collidable = (GetPlayer().StateMachine.State == 2 && decoy.broken);
-				if((GetPlayer().Position - Position).Length() < 8f && GetPlayer().StateMachine.State == 2)
-                {
+				if ((GetPlayer().Position - Position).Length() < 8f && GetPlayer().StateMachine.State == 2)
+				{
 					decoy.RemoveSelf();
-                }
+				}
 				if (GetPlayer().StateMachine.State == 2)
 				{
 					if (!yeet.boostin)
@@ -96,45 +91,45 @@ namespace Celeste.Mod.JackalHelper.Entities
 							//GetLevel().Camera.Zoom = 1f;
 						}
 					}
-                    else
-                    {
+					else
+					{
 						Engine.TimeRate = 1f;
 						//GetLevel().Camera.Zoom = 1f;
 					}
 				}
-                else
-                {
+				else
+				{
 					Engine.TimeRate = 1f;
 				}
 
 
 			}
 
-        }
+		}
 
-        public static Level GetLevel()
-        {
-            try
-            {
-                return (Engine.Scene as Level);
-            }
-            catch (NullReferenceException)
-            {
-                return null;
-            }
-        }
-        public static Player GetPlayer()
-        {
-            try
-            {
-                return (Engine.Scene as Level).Tracker.GetEntity<Player>();
-            }
-            catch (NullReferenceException)
-            {
-                return null;
-            }
-        }
-    }
+		public static Level GetLevel()
+		{
+			try
+			{
+				return (Engine.Scene as Level);
+			}
+			catch (NullReferenceException)
+			{
+				return null;
+			}
+		}
+		public static Player GetPlayer()
+		{
+			try
+			{
+				return (Engine.Scene as Level).Tracker.GetEntity<Player>();
+			}
+			catch (NullReferenceException)
+			{
+				return null;
+			}
+		}
+	}
 }
 
 namespace Celeste.Mod.JackalHelper.Entities
@@ -176,7 +171,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			stretch.CenterOrigin();
 			Add(wiggler = Wiggler.Create(0.4f, 3f, delegate
 			{
-				sprite.Scale = Vector2.One * (float)(1.0 + (double)wiggler.Value * 0.400000005960464);
+				sprite.Scale = Vector2.One * (float)(1.0 + wiggler.Value * 0.400000005960464);
 			}));
 			Add(relocateSfx = new SoundSource());
 		}
@@ -257,7 +252,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			Vector2 playerTo = Position + new Vector2(side * 4, -3f);
 			Vector2 badelineFrom = badeline.Position;
 			Vector2 badelineTo = Position + new Vector2(-side * 4, 3f);
-			for (float p = 0f; (double)p < 1.0; p += Engine.DeltaTime / 0.2f)
+			for (float p = 0f; p < 1.0; p += Engine.DeltaTime / 0.2f)
 			{
 				Vector2 target = Vector2.Lerp(playerFrom, playerTo, p);
 				if (player.Scene != null)
@@ -315,17 +310,17 @@ namespace Celeste.Mod.JackalHelper.Entities
 				tween.OnUpdate = delegate (Tween t)
 				{
 					Position = Vector2.Lerp(from, to, t.Eased);
-					stretch.Scale.X = (float)(1.0 + (double)Calc.YoYo(t.Eased) * 2.0);
-					stretch.Scale.Y = (float)(1.0 - (double)Calc.YoYo(t.Eased) * 0.75);
-					if (!((double)t.Eased >= 0.899999976158142) && base.Scene.OnInterval(0.03f))
+					stretch.Scale.X = (float)(1.0 + Calc.YoYo(t.Eased) * 2.0);
+					stretch.Scale.Y = (float)(1.0 - Calc.YoYo(t.Eased) * 0.75);
+					if (!(t.Eased >= 0.899999976158142) && base.Scene.OnInterval(0.03f))
 					{
 						TrailManager.Add(this, Player.TwoDashesHairColor, 0.5f, frozenUpdate: false, useRawDeltaTime: false);
-						
+
 					}
 				};
 				tween.OnComplete = delegate
 				{
-					if (level != null && (double)base.X >= (double)level.Bounds.Right)
+					if (level != null && X >= (double)level.Bounds.Right)
 					{
 						RemoveSelf();
 					}
@@ -389,7 +384,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		}
 
 
-		
+
 	}
 	public class LunarHeart : Entity
 	{
@@ -487,7 +482,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			sprite.Position = Vector2.UnitY * (float)Math.Sin(timer * 2f) * 2f + moveWiggleDir * moveWiggler.Value * -8f;
 			if (respawnTimer > 0f)
 			{
-				
+
 				if (respawnTimer <= 0f)
 				{
 					Collidable = (Visible = true);

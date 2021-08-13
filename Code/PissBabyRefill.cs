@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections;
-using Celeste;
+using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using Celeste.Mod.Entities;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
@@ -189,7 +188,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private IEnumerator RefillRoutine(Vector2 speed)
 		{
-			
+
 			yield return null;
 			level.Shake();
 			sprite.Visible = (flash.Visible = false);

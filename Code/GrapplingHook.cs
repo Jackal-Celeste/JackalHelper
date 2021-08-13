@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -53,7 +51,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			//IL_0021: Unknown result type (might be due to invalid IL or missing references)
 			//IL_01c7: Unknown result type (might be due to invalid IL or missing references)
 			//IL_01cc: Unknown result type (might be due to invalid IL or missing references)
-			
+
 			previousPosition = position;
 			base.Depth = 100;
 			base.Collider = new Hitbox(8f, 10f, -4f, -10f);
@@ -90,32 +88,32 @@ namespace Celeste.Mod.JackalHelper.Entities
 				{
 					RemoveSelf();
 				}
-			}			
-				
-				thrown = true;
-				thrownY = Y;
-				RemoveTag(Tags.Persistent);
+			}
 
-				Vector2	newForce = new Vector2(1.5f, 0f);
-				
-				newForce.X *= (JackalModule.GetPlayer().Facing == Facings.Right ? 1f : -1f);
-				Speed = newForce * 320f;
-			
+			thrown = true;
+			thrownY = Y;
+			RemoveTag(Tags.Persistent);
+
+			Vector2 newForce = new Vector2(1.5f, 0f);
+
+			newForce.X *= (JackalModule.GetPlayer().Facing == Facings.Right ? 1f : -1f);
+			Speed = newForce * 320f;
+
 		}
 
 		public override void Update()
 		{
-			if(JackalModule.GetPlayer() != null)
-            {
-				if((JackalModule.GetPlayer().Position - Position).Length() > 120f)
-                {
+			if (JackalModule.GetPlayer() != null)
+			{
+				if ((JackalModule.GetPlayer().Position - Position).Length() > 120f)
+				{
 					Die();
-                }
-            }
-			if(grappled && JackalModule.GetPlayer() != null)
-            {
+				}
+			}
+			if (grappled && JackalModule.GetPlayer() != null)
+			{
 				grappled = (JackalModule.GetPlayer().StateMachine.State == 0 || JackalModule.GetPlayer().StateMachine.State == 1 || JackalModule.GetPlayer().StateMachine.State == 2);
-            }
+			}
 			if (!grappled)
 			{
 				base.Update();
@@ -138,30 +136,30 @@ namespace Celeste.Mod.JackalHelper.Entities
 					{
 						float target = ((!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f)));
 						Speed.X = Calc.Approach(Speed.X, target, 800f * Engine.DeltaTime);
-						
+
 					}
-					
+
 					previousPosition = base.ExactPosition;
 					MoveH(Speed.X * Engine.DeltaTime, onCollideH);
 					MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
 					float x = base.Center.X;
 					Rectangle bounds = Level.Bounds;
-					if (x > (float)((Rectangle)(bounds)).Right)
+					if (x > bounds.Right)
 					{
 						MoveH(32f * Engine.DeltaTime);
 						float num3 = base.Left - 8f;
 						bounds = Level.Bounds;
-						if (num3 > (float)((Rectangle)(bounds)).Right)
+						if (num3 > bounds.Right)
 						{
 							RemoveSelf();
 						}
 					}
-					else if((x < (float)((Rectangle)(bounds)).Left))
-						{
+					else if ((x < bounds.Left))
+					{
 						MoveH(-32f * Engine.DeltaTime);
 						float num9 = base.Right + 8f;
 						bounds = Level.Bounds;
-						if (num9 < (float)((Rectangle)(bounds)).Left)
+						if (num9 < bounds.Left)
 						{
 							RemoveSelf();
 						}
@@ -171,30 +169,30 @@ namespace Celeste.Mod.JackalHelper.Entities
 					{
 						float left = base.Left;
 						bounds = Level.Bounds;
-						if (left < (float)((Rectangle)(bounds)).Left)
+						if (left < bounds.Left)
 						{
 							bounds = Level.Bounds;
-							base.Left = ((Rectangle)(bounds)).Left;
+							base.Left = bounds.Left;
 							Speed.X *= -0.4f;
 						}
 						else
 						{
 							float top = base.Top;
 							bounds = Level.Bounds;
-							if (top < (float)(((Rectangle)(bounds)).Top - 4))
+							if (top < bounds.Top - 4)
 							{
 								bounds = Level.Bounds;
-								base.Top = ((Rectangle)(bounds)).Top + 4;
+								base.Top = bounds.Top + 4;
 								Speed.Y = 0f;
 							}
 							else
 							{
 								float bottom = base.Bottom;
 								bounds = Level.Bounds;
-								if (bottom > (float)((Rectangle)(bounds)).Bottom && SaveData.Instance.Assists.Invincible)
+								if (bottom > bounds.Bottom && SaveData.Instance.Assists.Invincible)
 								{
 									bounds = Level.Bounds;
-									base.Bottom = ((Rectangle)(bounds)).Bottom;
+									base.Bottom = bounds.Bottom;
 									Speed.Y = -300f;
 									Audio.Play("event:/game/general/assist_screenbottom", Position);
 								}
@@ -202,7 +200,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 								{
 									float top2 = base.Top;
 									bounds = Level.Bounds;
-									if (top2 > (float)((Rectangle)(bounds)).Bottom)
+									if (top2 > bounds.Bottom)
 									{
 										Die();
 									}
@@ -213,7 +211,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 					float x2 = base.X;
 					bounds = Level.Bounds;
 
-					if (x2 < (float)(((Rectangle)(bounds)).Left + 10))
+					if (x2 < bounds.Left + 10)
 					{
 						MoveH(32f * Engine.DeltaTime);
 					}
@@ -226,45 +224,45 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 
 			}
-			else if(JackalModule.GetPlayer() != null)
-            {
-				if(grappled && thrown)
-                {
+			else if (JackalModule.GetPlayer() != null)
+			{
+				if (grappled && thrown)
+				{
 					if (canSetPos)
 					{
 						startDistance = (Position - JackalModule.GetPlayer().Position);
 						canSetPos = false;
 					}
 				}
-                if (grappled && thrown)
-                {
+				if (grappled && thrown)
+				{
 					JackalModule.GetPlayer().StateMachine.State = 0;
 					moveDistance = startDistance;
 					moveDistance.Normalize();
 					moveDistance *= 360f;
 					JackalModule.GetPlayer().Speed = moveDistance;
 					JackalModule.GetPlayer().Facing = (JackalModule.GetPlayer().Speed.X < 0 ? Facings.Left : Facings.Right);
-                    if (Input.Jump.Check)
-                    {
+					if (Input.Jump.Check)
+					{
 						JackalModule.GetPlayer().Jump();
 						JackalModule.GetPlayer().Speed.Y *= 2f;
 						grappled = false;
 						canSetPos = true;
 						thrown = false;
 						RemoveSelf();
-                    }
-					if((JackalModule.GetPlayer().Position - Position).Length() < 24f)
-                    {
+					}
+					if ((JackalModule.GetPlayer().Position - Position).Length() < 24f)
+					{
 						grappled = false;
 						canSetPos = true;
 						thrown = false;
 						RemoveSelf();
 					}
-                }
-            }
+				}
+			}
 			if (JackalModule.GetLevel() != null)
 			{
-				if (this.CollideCheck<LaniStar>())
+				if (CollideCheck<LaniStar>())
 				{
 					Speed.X = 0;
 					Speed.Y = 0;
@@ -274,9 +272,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 					grappled = true;
 				}
 			}
-                
-				
-			
+
+
+
 
 			/*
 			if(JackalModule.GetPlayer().Speed != moveDistance && grappled)
@@ -285,7 +283,7 @@ namespace Celeste.Mod.JackalHelper.Entities
             }*/
 		}
 
-		
+
 
 		private void OnCollideH(CollisionData data)
 		{
@@ -295,7 +293,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			//IL_0073: Unknown result type (might be due to invalid IL or missing references)
 			Speed.X = 0;
 			Speed.Y = 0;
-			
+
 			Audio.Play("event:/game/05_mirror_temple/crystaltheo_hit_side", Position);
 			Speed.X *= -0.4f;
 			grappled = true;
@@ -310,13 +308,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 			//IL_00f0: Unknown result type (might be due to invalid IL or missing references)
 			if (data.Hit is DashSwitch)
 			{
-				(data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitY * (float)Math.Sign(Speed.Y));
+				(data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitY * Math.Sign(Speed.Y));
 			}
 			if (Speed.Y > 0f)
 			{
 
-					Audio.Play("event:/game/05_mirror_temple/crystaltheo_hit_ground", Position, "crystal_velocity", 0f);
-				
+				Audio.Play("event:/game/05_mirror_temple/crystaltheo_hit_ground", Position, "crystal_velocity", 0f);
+
 			}
 
 			if (Speed.Y > 140f && !(data.Hit is SwapBlock) && !(data.Hit is DashSwitch))
@@ -354,7 +352,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				sprite.Visible = false;
 				base.Depth = -1000000;
 				AllowPushing = false;
-			
+
 			}
 		}
 

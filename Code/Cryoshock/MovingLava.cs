@@ -1,8 +1,7 @@
-﻿using Celeste.Mod.Entities;
+﻿using System;
+using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System;
-using System.Collections.Generic;
 using MonoMod.Utils;
 
 namespace Celeste.Mod.JackalHelper.Entities
@@ -39,29 +38,29 @@ namespace Celeste.Mod.JackalHelper.Entities
 			this.sineFreqY = sineFreqY;
 			this.sineAmpX = sineAmpX;
 			this.sineFreqX = sineFreqX;
-			this.flaglinSpdY = linSpdYFlag;
-			this.flaglinSpdX = linSpdXFlag;
-			this.flagsineAmpY = sineAmpYFlag;
-			this.flagsineFreqY = sineFreqYFlag;
-			this.flagsineAmpX = sineAmpXFlag;
-			this.flagsineFreqX = sineFreqXFlag;
+			flaglinSpdY = linSpdYFlag;
+			flaglinSpdX = linSpdXFlag;
+			flagsineAmpY = sineAmpYFlag;
+			flagsineFreqY = sineFreqYFlag;
+			flagsineAmpX = sineAmpXFlag;
+			flagsineFreqX = sineFreqXFlag;
 			this.flag = flag;
 			this.startFlag = startFlag;
-            mask = JackalModule.spriteBank.Create("voidTear");
+			mask = JackalModule.spriteBank.Create("voidTear");
 			mask.FlipX = false;
 			maskOffset.X *= -1f;
 			Add(mask);
 			mask.Play("boost");
-			if(sineAmpX == 0 && linSpdX == 0)
-            {
+			if (sineAmpX == 0 && linSpdX == 0)
+			{
 				mask.Rotation = (float)Math.PI * 3 / 2;
 				maskOffset = new Vector2(0, 352);
 
-            }
-            else
-            {
+			}
+			else
+			{
 				maskOffset = new Vector2(-350f + Width, 0);
-            }
+			}
 			Depth = -1500000;
 			mask.Visible = false;
 		}
@@ -79,53 +78,53 @@ namespace Celeste.Mod.JackalHelper.Entities
 			Collidable = true;
 		}
 
-        public override void Awake(Scene scene)
-        {
-            base.Awake(scene);
-        }
+		public override void Awake(Scene scene)
+		{
+			base.Awake(scene);
+		}
 
 
-        public override void Update()
+		public override void Update()
 		{
 			if (JackalModule.GetLevel() != null && JackalModule.GetPlayer() != null)
 			{
-                if (JackalModule.GetLevel().Session.GetFlag(startFlag))
-                {
+				if (JackalModule.GetLevel().Session.GetFlag(startFlag))
+				{
 					Motion();
 				}
 			}
 			if (JackalModule.GetLevel() != null)
-            {
+			{
 				solidData = new DynData<FireBarrier>(this);
 				solidData.Get<LavaRect>("Lava").CenterColor = Color.Black * 0f;
 				solidData.Get<LavaRect>("Lava").SurfaceColor = Color.Black * 0f;
 				solidData.Get<LavaRect>("Lava").EdgeColor = Color.Black * 0f;
-            }
+			}
 
 			Collidable = true;
-			mask.Position = this.Position + maskOffset;
+			mask.Position = Position + maskOffset;
 			mask.Visible = false;
 			mask.FlipX = false;
 			mask.Play("boost");
 			//mask.Active = true;
-			
+
 
 
 			base.Update();
 		}
 
-        public override void Render()
-        {
-			
-				mask.Position = Position + maskOffset;
-				mask.RenderPosition = Position + maskOffset;
+		public override void Render()
+		{
+
+			mask.Position = Position + maskOffset;
+			mask.RenderPosition = Position + maskOffset;
 			mask.Visible = true;
 			mask.Play("boost");
 			base.Render();
 		}
 
 
-        public void Motion()
+		public void Motion()
 		{
 
 			float linDeltaX = (JackalModule.GetLevel().Session.GetFlag(flag) ? flaglinSpdX : linSpdX) * Engine.DeltaTime;

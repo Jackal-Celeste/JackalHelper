@@ -1,28 +1,24 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Celeste;
+using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using Celeste.Mod.Entities;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
 	[TrackedAs(typeof(DustStaticSpinner))]
 	[CustomEntity("JackalHelper/CustomDustSprite")]
-    public class CustomDustSprite : Entity
-    {
+	public class CustomDustSprite : Entity
+	{
 		public static ParticleType P_Move;
 
 		public const float ParticleInterval = 0.02f;
 
 		private float offset = Calc.Random.NextFloat();
 		public CustomDustGraphic Sprite;
-        public CustomDustSprite(Vector2 position, bool attachToSolid, string spritePath, bool ignoreSolids = false) : base(position)
-        {
+		public CustomDustSprite(Vector2 position, bool attachToSolid, string spritePath, bool ignoreSolids = false) : base(position)
+		{
 			base.Collider = new ColliderList(new Circle(6f), new Hitbox(16f, 4f, -8f, -3f));
 			Add(new PlayerCollider(OnPlayer));
 			Add(new HoldableCollider(OnHoldable));
@@ -39,10 +35,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 		}
 
-        public CustomDustSprite(EntityData data, Vector2 offset) : this(data.Position + offset, data.Bool("attachToSolid"), data.Attr("spritePath"), data.Bool("ignoreSolids", defaultValue:false))
-        {
+		public CustomDustSprite(EntityData data, Vector2 offset) : this(data.Position + offset, data.Bool("attachToSolid"), data.Attr("spritePath"), data.Bool("ignoreSolids", defaultValue: false))
+		{
 
-        }
+		}
 
 
 		public void ForceInstantiate()
@@ -409,7 +405,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				}
 				if (num3 > 0 && eyeLookRange.Length() > 0f)
 				{
-					eyeLookRange /= (float)num3;
+					eyeLookRange /= num3;
 					eyeLookRange = eyeLookRange.SafeNormalize();
 				}
 				EyeTargetDirection = (EyeDirection = eyeLookRange);
@@ -438,11 +434,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 				int num = Math.Sign(angle.X);
 				int num2 = Math.Sign(angle.Y);
 				base.Entity.Collidable = false;
-				if (base.Scene.CollideCheck<Solid>(new Rectangle((int)(base.Entity.X - 4f + (float)(num * 16)), (int)(base.Entity.Y - 4f + (float)(num2 * 4)), 8, 8)) || base.Scene.CollideCheck<DustStaticSpinner>(new Rectangle((int)(base.Entity.X - 4f + (float)(num * 16)), (int)(base.Entity.Y - 4f + (float)(num2 * 4)), 8, 8)))
+				if (base.Scene.CollideCheck<Solid>(new Rectangle((int)(base.Entity.X - 4f + num * 16), (int)(base.Entity.Y - 4f + num2 * 4), 8, 8)) || base.Scene.CollideCheck<DustStaticSpinner>(new Rectangle((int)(base.Entity.X - 4f + num * 16), (int)(base.Entity.Y - 4f + num2 * 4), 8, 8)))
 				{
 					vector.X = 5f;
 				}
-				if (base.Scene.CollideCheck<Solid>(new Rectangle((int)(base.Entity.X - 4f + (float)(num * 4)), (int)(base.Entity.Y - 4f + (float)(num2 * 16)), 8, 8)) || base.Scene.CollideCheck<DustStaticSpinner>(new Rectangle((int)(base.Entity.X - 4f + (float)(num * 4)), (int)(base.Entity.Y - 4f + (float)(num2 * 16)), 8, 8)))
+				if (base.Scene.CollideCheck<Solid>(new Rectangle((int)(base.Entity.X - 4f + num * 4), (int)(base.Entity.Y - 4f + num2 * 16), 8, 8)) || base.Scene.CollideCheck<DustStaticSpinner>(new Rectangle((int)(base.Entity.X - 4f + num * 4), (int)(base.Entity.Y - 4f + num2 * 16), 8, 8)))
 				{
 					vector.Y = 5f;
 				}
