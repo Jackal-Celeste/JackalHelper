@@ -6,7 +6,7 @@
     <AssemblyName>JackalHelper</AssemblyName>
     <RootNamespace>Celeste.Mod.JackalHelper</RootNamespace>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <!--Disable "Copy Local" for all references-->
