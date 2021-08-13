@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -9,6 +10,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 	[Tracked]
 	public class StopwatchRefill : Entity
 	{
+
 		// COLOURSOFNOISE: None of these particle types are used
 		public static ParticleType P_Shatter;
 		public static ParticleType P_Regen;
@@ -37,6 +39,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 		private bool oneUse;
 		private bool refillDash;
 		public float recallTime;
+		// COLOURSOFNOISE: This needs to be implemented in Ahorn
+		private bool storeFollowers;
 
 		private float respawnTimer;
 
@@ -44,12 +48,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public float recallTimer = 0f;
 
-		public StopwatchRefill(Vector2 position, bool oneUse, bool refillDash, float time)
-				: base(position)
+		public StopwatchRefill(Vector2 position, bool oneUse, bool refillDash, float time, bool storeFollowers)
+			: base(position)
 		{
 			this.refillDash = refillDash;
 			recallTime = time;
 			this.oneUse = oneUse;
+			this.storeFollowers = storeFollowers;
 
 			Depth = -100;
 			Collider = new Hitbox(16f, 16f, -8f, -8f);
@@ -89,7 +94,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		}
 
 		public StopwatchRefill(EntityData data, Vector2 offset)
-			: this(data.Position + offset, data.Bool("oneUse"), data.Bool("RefillDashOnUse", defaultValue: true), data.Float("time"))
+			: this(data.Position + offset, data.Bool("oneUse"), data.Bool("RefillDashOnUse", defaultValue: true), data.Float("time"), data.Bool("storeFollowers"))
 		{
 		}
 
@@ -119,6 +124,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				if (JackalModule.TryGetPlayer(out Player player))
 				{
+					if (storeFollowers)
+						MoveFollowers(player.Leader, (Position + new Vector2(0f, 8f)) - player.Position);
+
 					player.Position = (Position + new Vector2(0f, 8f));
 				}
 				timed = false;
@@ -218,6 +226,19 @@ namespace Celeste.Mod.JackalHelper.Entities
 				RemoveSelf();
 			}
 		}
+
+		private static void MoveFollowers(Leader leader, Vector2 offset)
+		{
+			for (int i = 0; i < leader.PastPoints.Count; i++)
+			{
+				leader.PastPoints[i] += offset;
+			}
+			foreach (Follower follower in leader.Followers)
+			{
+				follower.Entity.Position += offset;
+			}
+		}
+
 	}
 
 }
