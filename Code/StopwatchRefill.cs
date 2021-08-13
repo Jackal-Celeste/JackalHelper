@@ -5,70 +5,62 @@ using Monocle;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
-
 	[CustomEntity("JackalHelper/TracerRefill")]
 	[Tracked]
 	public class StopwatchRefill : Entity
 	{
-
+		// COLOURSOFNOISE: None of these particle types are used
 		public static ParticleType P_Shatter;
-
 		public static ParticleType P_Regen;
-
 		public static ParticleType P_Glow;
 
 		public static ParticleType P_ShatterTwo;
-
 		public static ParticleType P_RegenTwo;
-
 		public static ParticleType P_GlowTwo;
 
+		private ParticleType p_shatter;
+		private ParticleType p_regen;
+		private ParticleType p_glow;
+
 		private Sprite sprite;
-
 		private Sprite flash;
-
 		private Image outline;
 
 		private Wiggler wiggler;
+		private SineWave sine;
 
 		private BloomPoint bloom;
-
 		private VertexLight light;
 
 		private Level level;
 
-		private SineWave sine;
-
 		private bool oneUse;
-
-		private ParticleType p_shatter;
-
-		private ParticleType p_regen;
-
-		private ParticleType p_glow;
+		private bool refillDash;
+		public float recallTime;
 
 		private float respawnTimer;
 
 		public bool timed;
 
-		public float recallTime;
-
 		public float recallTimer = 0f;
-
-		private bool refillDash;
 
 		public StopwatchRefill(Vector2 position, bool oneUse, bool refillDash, float time)
 				: base(position)
 		{
 			this.refillDash = refillDash;
 			recallTime = time;
-			base.Collider = new Hitbox(16f, 16f, -8f, -8f);
-			Add(new PlayerCollider(OnPlayer));
 			this.oneUse = oneUse;
-			string str = "objects/stopwatch/";
+
+			Depth = -100;
+			Collider = new Hitbox(16f, 16f, -8f, -8f);
+
+			Add(new PlayerCollider(OnPlayer));
+
 			p_shatter = Refill.P_Shatter;
 			p_regen = Refill.P_Regen;
 			p_glow = Refill.P_Glow;
+
+			string str = "objects/stopwatch/";
 			Add(outline = new Image(GFX.Game[str + "outline"]));
 			outline.CenterOrigin();
 			outline.Visible = false;
@@ -83,17 +75,17 @@ namespace Celeste.Mod.JackalHelper.Entities
 				flash.Visible = false;
 			};
 			flash.CenterOrigin();
+
 			Add(wiggler = Wiggler.Create(1f, 4f, delegate (float v)
 			{
 				sprite.Scale = (flash.Scale = Vector2.One * (1f + v * 0.2f));
 			}));
+			Add(sine = new SineWave(0.6f).Randomize());
+
 			Add(new MirrorReflection());
+
 			Add(bloom = new BloomPoint(0.8f, 16f));
 			Add(light = new VertexLight(Color.White, 1f, 16, 48));
-			Add(sine = new SineWave(0.6f));
-			sine.Randomize();
-			//UpdateY();
-			base.Depth = -100;
 		}
 
 		public StopwatchRefill(EntityData data, Vector2 offset)
@@ -125,9 +117,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 			else if (recallTimer >= recallTime)
 			{
-				if (JackalModule.GetPlayer() != null)
+				if (JackalModule.TryGetPlayer(out Player player))
 				{
-					JackalModule.GetPlayer().Position = (Position + new Vector2(0f, 8f));
+					player.Position = (Position + new Vector2(0f, 8f));
 				}
 				timed = false;
 				recallTimer = 0f;
@@ -142,7 +134,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			UpdateY();
 			light.Alpha = Calc.Approach(light.Alpha, sprite.Visible ? 1f : 0f, 4f * Engine.DeltaTime);
 			bloom.Alpha = light.Alpha * 0.8f;
-			if (base.Scene.OnInterval(2f) && sprite.Visible)
+			if (Scene.OnInterval(2f) && sprite.Visible)
 			{
 				flash.Play("flash", restart: true);
 				flash.Visible = true;
@@ -156,7 +148,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				Collidable = true;
 				sprite.Visible = true;
 				outline.Visible = false;
-				base.Depth = -100;
+				Depth = Depths.Pickups;
 				wiggler.Start();
 				Audio.Play("event:/new_content/game/10_farewell/pinkdiamond_return", Position);
 				//level.ParticlesFG.Emit(p_regen, 16, Position, Vector2.One * 2f);
@@ -165,10 +157,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private void UpdateY()
 		{
-			Sprite obj = flash;
-			Sprite obj2 = sprite;
-			float num2 = (bloom.Y = sine.Value * 2f);
-			float num5 = (obj.Y = (obj2.Y = num2));
+			flash.Y = sprite.Y = bloom.Y = sine.Value * 2f;
 		}
 
 		public override void Render()
@@ -189,6 +178,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 			recallTimer += Engine.DeltaTime;
 
 			Add(new Coroutine(RefillRoutine(player)));
+
+			// COLOURSOFNOISE: Why not use this approach?
 			//Add(new Coroutine(RecallRoutine(player)));
 			respawnTimer = 2f + recallTime;
 			if (refillDash)
