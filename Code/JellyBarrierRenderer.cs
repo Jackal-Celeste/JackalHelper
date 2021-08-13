@@ -1,8 +1,5 @@
-﻿// Celeste.SeekerBarrierRenderer
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Celeste;
-using Celeste.Mod.JackalHelper.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -18,11 +15,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 			public bool Visible;
 
 			public Vector2 A;
-
 			public Vector2 B;
 
 			public Vector2 Min;
-
 			public Vector2 Max;
 
 			public Vector2 Normal;
@@ -79,7 +74,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 		}
 
-		private List<OneWayJellyBarrier> list = new List<OneWayJellyBarrier>();
+		private HashSet<OneWayJellyBarrier> barriers = new HashSet<OneWayJellyBarrier>();
 
 		private List<Edge> edges = new List<Edge>();
 
@@ -91,14 +86,14 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public JellyBarrierRenderer()
 		{
-			base.Tag = Tags.Global | Tags.TransitionUpdate;
-			base.Depth = 0;
+			Tag = Tags.Global | Tags.TransitionUpdate;
+			Depth = Depths.Player;
 			Add(new CustomBloom(OnRenderBloom));
 		}
 
 		public void Track(OneWayJellyBarrier block, Level level)
 		{
-			list.Add(block);
+			barriers.Add(block);
 			if (tiles == null)
 			{
 				levelTileBounds = level.TileBounds;
@@ -116,8 +111,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public void Untrack(OneWayJellyBarrier block)
 		{
-			list.Remove(block);
-			if (list.Count <= 0)
+			barriers.Remove(block);
+			if (barriers.Count <= 0)
 			{
 				tiles = null;
 			}
@@ -145,24 +140,24 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public void UpdateEdges()
 		{
-			Camera camera = (base.Scene as Level).Camera;
+			Camera camera = (Scene as Level).Camera;
 			Rectangle view = new Rectangle((int)camera.Left - 4, (int)camera.Top - 4, (int)(camera.Right - camera.Left) + 8, (int)(camera.Bottom - camera.Top) + 8);
 			for (int i = 0; i < edges.Count; i++)
 			{
 				if (edges[i].Visible)
 				{
-					if (base.Scene.OnInterval(0.25f, i * 0.01f) && !edges[i].InView(ref view))
+					if (Scene.OnInterval(0.25f, i * 0.01f) && !edges[i].InView(ref view))
 					{
 						edges[i].Visible = false;
 					}
 				}
-				else if (base.Scene.OnInterval(0.05f, i * 0.01f) && edges[i].InView(ref view))
+				else if (Scene.OnInterval(0.05f, i * 0.01f) && edges[i].InView(ref view))
 				{
 					edges[i].Visible = true;
 				}
-				if (edges[i].Visible && (base.Scene.OnInterval(0.05f, i * 0.01f) || edges[i].Wave == null))
+				if (edges[i].Visible && (Scene.OnInterval(0.05f, i * 0.01f) || edges[i].Wave == null))
 				{
-					edges[i].UpdateWave(base.Scene.TimeActive * 3f);
+					edges[i].UpdateWave(Scene.TimeActive * 3f);
 				}
 			}
 		}
@@ -171,32 +166,27 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			dirty = false;
 			edges.Clear();
-			if (list.Count <= 0)
+			if (barriers.Count <= 0)
 			{
 				return;
 			}
-			Level level = base.Scene as Level;
-			int left = level.TileBounds.Left;
-			int top = level.TileBounds.Top;
-			int right = level.TileBounds.Right;
-			int bottom = level.TileBounds.Bottom;
+
 			Point[] array = new Point[4]
 			{
-			new Point(0, -1),
-			new Point(0, 1),
-			new Point(-1, 0),
-			new Point(1, 0)
+				new Point(0, -1),
+				new Point(0, 1),
+				new Point(-1, 0),
+				new Point(1, 0)
 			};
-			foreach (OneWayJellyBarrier item in list)
+			foreach (OneWayJellyBarrier item in barriers)
 			{
 				for (int i = (int)item.X / 8; i < item.Right / 8f; i++)
 				{
 					for (int j = (int)item.Y / 8; j < item.Bottom / 8f; j++)
 					{
-						Point[] array2 = array;
-						for (int k = 0; k < array2.Length; k++)
+						for (int k = 0; k < array.Length; k++)
 						{
-							Point point = array2[k];
+							Point point = array[k];
 							Point point2 = new Point(-point.Y, point.X);
 							if (!Inside(i + point.X, j + point.Y) && (!Inside(i - point2.X, j - point2.Y) || Inside(i + point.X - point2.X, j + point.Y - point2.Y)))
 							{
@@ -225,9 +215,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private void OnRenderBloom()
 		{
-			Camera camera = (base.Scene as Level).Camera;
-			Rectangle rectangle = new Rectangle((int)camera.Left, (int)camera.Top, (int)(camera.Right - camera.Left), (int)(camera.Bottom - camera.Top));
-			foreach (OneWayJellyBarrier item in list)
+			Camera camera = (Scene as Level).Camera;
+			foreach (OneWayJellyBarrier item in barriers)
 			{
 				if (item.Visible)
 				{
@@ -239,7 +228,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 				if (edge.Visible)
 				{
 					Vector2 value = edge.Parent.Position + edge.A;
-					Vector2 vector = edge.Parent.Position + edge.B;
 					for (int i = 0; i <= edge.Length; i++)
 					{
 						Vector2 vector2 = value + edge.Normal * i;
@@ -251,30 +239,19 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Render()
 		{
-			if (list.Count <= 0)
-			{
-				return;
-			}
-			Color color = Color.White * 0.15f;
-			Color value = Color.White * 0.25f;
-			foreach (OneWayJellyBarrier item in list)
+			foreach (OneWayJellyBarrier item in barriers)
 			{
 				if (item.Visible)
 				{
 					Draw.Rect(item.Collider, item.color);
 				}
 			}
-			if (edges.Count <= 0)
-			{
-				return;
-			}
+
 			foreach (Edge edge in edges)
 			{
 				if (edge.Visible)
 				{
 					Vector2 value2 = edge.Parent.Position + edge.A;
-					Vector2 vector = edge.Parent.Position + edge.B;
-					Color color2 = Color.Lerp(value, Color.White, edge.Parent.Flash);
 					for (int i = 0; i <= edge.Length; i++)
 					{
 						Vector2 vector2 = value2 + edge.Normal * i;

@@ -75,6 +75,8 @@ namespace Celeste.Mod.JackalHelper
 		// Load runs before Celeste itself has initialized properly.
 		public override void Load()
 		{
+			Logger.SetLogLevel("JackalHelper", LogLevel.Info);
+
 			// PLAYER STATES
 			// State Handling
 			On.Celeste.Player.ctor += Player_ctor;
@@ -556,27 +558,18 @@ namespace Celeste.Mod.JackalHelper
 			orig.Invoke(self);
 			foreach (OneWayJellyBarrier barrier in self.Scene.Tracker.GetEntities<OneWayJellyBarrier>())
 			{
-				if (barrier.InboundsCheck(barrier, self))
+				if (barrier.InboundsCheck(self))
 				{
 					bool destroy = false;
-					if ((self.Speed.Y > 0 && barrier.dir == 'U') ||
-						(self.Speed.Y < 0 && barrier.dir == 'D') ||
-						(self.Speed.X > 0 && barrier.dir == 'L') ||
-						(self.Speed.X < 0 && barrier.dir == 'R'))
+					if (barrier.IsAgainst(self.Speed))
 					{
 						destroy = true;
 					}
 
 					Player player = self.Scene.Tracker.GetEntity<Player>();
-					if (player?.Holding != null && !barrier.ignoreOnHeld)
+					if (player?.Holding != null && !barrier.ignoreOnHeld && barrier.IsAgainst(player.Speed))
 					{
-						if ((player.Speed.Y > 0 && barrier.dir == 'U') ||
-							(player.Speed.Y < 0 && barrier.dir == 'D') ||
-							(player.Speed.X > 0 && barrier.dir == 'L') ||
-							(player.Speed.X < 0 && barrier.dir == 'R'))
-						{
-							destroy = true;
-						}
+						destroy = true;
 					}
 
 					if (destroy)

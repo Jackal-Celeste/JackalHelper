@@ -1,11 +1,8 @@
-﻿// Celeste.SeekerBarrier
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
@@ -13,29 +10,24 @@ namespace Celeste.Mod.JackalHelper.Entities
 	[Tracked]
 	public class OneWayJellyBarrier : Solid
 	{
-		public float Flash = 0f;
+		private static readonly float[] particleSpeeds = new float[3]
+		{
+			12f,
+			20f,
+			40f
+		};
 
-		public float alpha;
+		public float Flash = 0f;
 
 		public float Solidify = 0f;
 
-		public bool Flashing = false;
-
 		private float solidifyDelay = 0f;
 
-		public JellyBarrierRenderer jellyrend = new JellyBarrierRenderer();
+		private JellyBarrierRenderer renderer = new JellyBarrierRenderer();
 
 		private List<Vector2> particles = new List<Vector2>();
 
-		private List<OneWayJellyBarrier> barriers = new List<OneWayJellyBarrier>();
-
-		private float[] speeds = new float[3]
-		{
-		12f,
-		20f,
-		40f
-		};
-		private enum Direction
+		public enum Directions
 		{
 			Up,
 			Down,
@@ -43,89 +35,65 @@ namespace Celeste.Mod.JackalHelper.Entities
 			Right
 		}
 
-		public char dir = 'U';
-
-		public List<float> jellySpdX;
+		public Directions Direction;
 
 		public bool ignoreOnHeld;
 
-		public List<float> jellySpdY;
-
-		public List<Glider> jellies = new List<Glider>();
-
-		public bool jelliesCollected = false;
-
-		public bool trackingSet = false;
-
-		public string direction;
-
+		public float alpha;
 		public Color color;
 
-		public OneWayJellyBarrier(Vector2 position, float width, float height, string direction, bool ignoreOnHeld, string colorName, float alpha)
+		private bool trackingSet = false;
+
+
+		public OneWayJellyBarrier(Vector2 position, float width, float height, Directions direction, bool ignoreOnHeld, string colorName, float alpha)
 			: base(position, width, height, safe: false)
 		{
 			this.alpha = alpha;
-			alpha = Math.Min(Math.Abs(alpha), 1f);
-			color = Calc.HexToColor(colorName) * alpha;
+			color = Calc.HexToColor(colorName) * Math.Min(Math.Abs(alpha), 1f);
 			this.ignoreOnHeld = ignoreOnHeld;
-			this.direction = direction;
+			Direction = direction;
+
 			Collidable = false;
-			for (int i = 0; i < base.Width * base.Height / 16f; i++)
+
+			for (int i = 0; i < Width * Height / 16f; i++)
 			{
-				particles.Add(new Vector2(Calc.Random.NextFloat(base.Width - 1f), Calc.Random.NextFloat(base.Height - 1f)));
-			}
-			switch (direction.ToLower())
-			{
-				case "up":
-					dir = 'U';
-					break;
-				case "down":
-					dir = 'D';
-					break;
-				case "left":
-					dir = 'L';
-					break;
-				case "right":
-					dir = 'R';
-					break;
-				default:
-					dir = 'U';
-					break;
+				particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
 			}
 		}
 
 		public OneWayJellyBarrier(EntityData data, Vector2 offset)
-			: this(data.Position + offset, data.Width, data.Height, data.Attr("direction", "Up"), data.Bool("ignoreOnHeld", false), data.Attr("color", "000000"), data.Float("alpha", 0.5f))
+			: this(data.Position + offset, data.Width, data.Height, data.Enum("direction", Directions.Up), data.Bool("ignoreOnHeld", false), data.Attr("color", "000000"), data.Float("alpha", 0.5f))
 		{
 		}
 
+		public override void Awake(Scene scene)
+		{
+			base.Awake(scene);
+
+			if (!trackingSet)
+			{
+				// COLOURSOFNOISE: This should ideally be done with a hook but eh whatever
+				scene.Add(renderer = new JellyBarrierRenderer());
+				foreach (OneWayJellyBarrier barrier in Scene.Tracker.GetEntitiesCopy<OneWayJellyBarrier>())
+				{
+					barrier.renderer = renderer;
+					renderer.Track(barrier, SceneAs<Level>());
+					barrier.trackingSet = true;
+				}
+			}
+		}
 
 		public override void Removed(Scene scene)
 		{
 			base.Removed(scene);
-			jellyrend.Untrack(this);
+			renderer.Untrack(this);
 		}
 
 		public override void Update()
 		{
-			Scene scene = Scene;
-			if (JackalModule.GetLevel() != null && !trackingSet)
-			{
-				scene.Add(jellyrend = new JellyBarrierRenderer());
-				jellyrend.Track(this, JackalModule.GetLevel());
-				foreach (OneWayJellyBarrier barrier in JackalModule.GetLevel().Tracker.GetEntitiesCopy<OneWayJellyBarrier>())
-				{
-					barriers.Add(barrier);
-				}
-				trackingSet = true;
-			}
-			if (Flashing)
+			if (Flash > 0)
 			{
 				Flash = Calc.Approach(Flash, 0f, Engine.DeltaTime * 4f);
-				if (Flash <= 0f)
-				{
-					Flashing = false;
-				}
 			}
 			else if (solidifyDelay > 0f)
 			{
@@ -135,42 +103,33 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				Solidify = Calc.Approach(Solidify, 0f, Engine.DeltaTime);
 			}
-			int num = speeds.Length;
-			float height = base.Height;
-			int i = 0;
-			for (int count = particles.Count; i < count; i++)
+
+			float height = Height;
+			for (int i = 0; i < particles.Count; i++)
 			{
-				Vector2 value = particles[i] + Vector2.UnitY * speeds[i % num] * Engine.DeltaTime;
+				// COLOURSOFNOISE: Make particles move in Direction
+				Vector2 value = particles[i] + Vector2.UnitY * particleSpeeds[i % particleSpeeds.Length] * Engine.DeltaTime;
 				value.Y %= height - 1f;
 				particles[i] = value;
 			}
 			base.Update();
-			List<Glider> currentJellies = jellies;
-			if (JackalModule.GetLevel() != null)
-			{
-				if (!jelliesCollected)
-				{
-					foreach (Glider jelly in JackalModule.GetLevel().Entities.OfType<Glider>())
-					{
-						jellies.Add(jelly);
-						jelliesCollected = true;
-					}
-				}
-			}
 		}
 
-
-		public bool InboundsCheck(OneWayJellyBarrier self, Glider jelly)
+		public bool InboundsCheck(Glider jelly)
 		{
-			if (jelly.Position.X > self.Position.X && jelly.Position.X < (self.Position.X + self.Width))
+			return CollideCheck(jelly);
+		}
+
+		public bool IsAgainst(Vector2 dir)
+		{
+			return Direction switch
 			{
-				if (jelly.Position.Y > self.Position.Y && jelly.Position.Y < (self.Position.Y + self.Height))
-				{
-					Console.WriteLine(jelly.Speed.X);
-					return true;
-				}
-			}
-			return false;
+				Directions.Up => dir.Y > 0,
+				Directions.Down => dir.Y < 0,
+				Directions.Left => dir.X > 0,
+				Directions.Right => dir.X < 0,
+				_ => false,
+			};
 		}
 
 		public override void Render()
@@ -180,9 +139,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
 			}
-			if (Flashing)
+			if (Flash > 0)
 			{
-				Draw.Rect(base.Collider, Color.White * Flash * 0.5f);
+				Draw.Rect(Collider, Color.White * Flash * 0.5f);
 			}
 		}
 	}
