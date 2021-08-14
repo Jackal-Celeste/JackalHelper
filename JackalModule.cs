@@ -53,12 +53,6 @@ namespace Celeste.Mod.JackalHelper
 			return (Engine.Scene as Level)?.Tracker?.GetEntity<Player>();
 		}
 
-		public static bool TryGetPlayer(out Player player)
-		{
-			player = GetPlayer();
-			return player != null;
-		}
-
 		public static Level GetLevel()
 		{
 			return (Engine.Scene as Level);
