@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.JackalHelper.Entities {
+namespace Celeste.Mod.JackalHelper.Entities
+{
 	[Tracked]
 	[CustomEntity("JackalHelper/DummyCrystal")]
 	public class DummyCrystal : Actor
@@ -109,7 +108,7 @@ namespace Celeste.Mod.JackalHelper.Entities {
 					RemoveSelf();
 				}
 			}
-			
+
 		}
 
 		public override void Update()
@@ -139,10 +138,10 @@ namespace Celeste.Mod.JackalHelper.Entities {
 				if (OnGround())
 				{
 					dashes = Math.Max(dashes, 1f);
-					if(dashes == 1f)
-                    {
+					if (dashes == 1f)
+					{
 						crest.Color = Color.Red * 0.5f;
-                    } 
+					}
 					/*
 					crest.Color = Color.Red * 0.5f;
 					dashes = 1f;*/
@@ -197,35 +196,35 @@ namespace Celeste.Mod.JackalHelper.Entities {
 				previousPosition = base.ExactPosition;
 				MoveH(Speed.X * Engine.DeltaTime, onCollideH);
 				MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
-				if (base.Center.X > (float)Level.Bounds.Right)
+				if (base.Center.X > Level.Bounds.Right)
 				{
 					MoveH(32f * Engine.DeltaTime);
-					if (base.Left - 8f > (float)Level.Bounds.Right)
+					if (base.Left - 8f > Level.Bounds.Right)
 					{
 						RemoveSelf();
 					}
 				}
-				else if (base.Left < (float)Level.Bounds.Left)
+				else if (base.Left < Level.Bounds.Left)
 				{
 					base.Left = Level.Bounds.Left;
 					Speed.X *= -0.4f;
 				}
-				else if (base.Top < (float)(Level.Bounds.Top - 4))
+				else if (base.Top < Level.Bounds.Top - 4)
 				{
 					base.Top = Level.Bounds.Top + 4;
 					Speed.Y = 0f;
 				}
-				else if (base.Bottom > (float)Level.Bounds.Bottom && SaveData.Instance.Assists.Invincible)
+				else if (base.Bottom > Level.Bounds.Bottom && SaveData.Instance.Assists.Invincible)
 				{
 					base.Bottom = Level.Bounds.Bottom;
 					Speed.Y = -300f;
 					Audio.Play("event:/game/general/assist_screenbottom", Position);
 				}
-				else if (base.Top > (float)Level.Bounds.Bottom)
+				else if (base.Top > Level.Bounds.Bottom)
 				{
 					Die();
 				}
-				if (base.X < (float)(Level.Bounds.Left + 10))
+				if (base.X < Level.Bounds.Left + 10)
 				{
 					MoveH(32f * Engine.DeltaTime);
 				}
@@ -250,10 +249,10 @@ namespace Celeste.Mod.JackalHelper.Entities {
 					JackalModule.GetPlayer().Position = p;
 
 				}
-                else
-                {
+				else
+				{
 					Collidable = true;
-                }
+				}
 			}
 
 		}
@@ -294,7 +293,7 @@ namespace Celeste.Mod.JackalHelper.Entities {
 
 
 
-		
+
 
 		public bool HitSpring(Spring spring)
 		{
@@ -335,7 +334,7 @@ namespace Celeste.Mod.JackalHelper.Entities {
 			//IL_0073: Unknown result type (might be due to invalid IL or missing references)
 			if (data.Hit is DashSwitch)
 			{
-				(data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitX * (float)Math.Sign(Speed.X));
+				(data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitX * Math.Sign(Speed.X));
 			}
 			Audio.Play("event:/game/05_mirror_temple/crystaltheo_hit_side", Position);
 			Speed.X *= -0.4f;
@@ -350,7 +349,7 @@ namespace Celeste.Mod.JackalHelper.Entities {
 			//IL_00f0: Unknown result type (might be due to invalid IL or missing references)
 			if (data.Hit is DashSwitch)
 			{
-				(data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitY * (float)Math.Sign(Speed.Y));
+				(data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitY * Math.Sign(Speed.Y));
 			}
 			if (Speed.Y > 0f)
 			{
@@ -375,7 +374,7 @@ namespace Celeste.Mod.JackalHelper.Entities {
 			}
 		}
 
-		
+
 
 		public override bool IsRiding(Solid solid)
 		{
@@ -435,19 +434,19 @@ namespace Celeste.Mod.JackalHelper.Entities {
 			}
 		}
 
-        public override void Render()
-        {
+		public override void Render()
+		{
 			if (JackalModule.GetPlayer() != null && thrown && !dead)
 			{
 				//Draw.Line(Position - 8*Vector2.UnitY, JackalModule.GetPlayer().Center, Color.Violet * 0.8f);
 			}
-            base.Render();
-        }
+			base.Render();
+		}
 
-        public void Die(Vector2 goal, out Vector2 pos)
-        {
+		public void Die(Vector2 goal, out Vector2 pos)
+		{
 			Collidable = false;
-			
+
 			pos = Position;
 			Position = goal;
 			dashes = crest.Color == Color.Blue ? 0f : (crest.Color == Color.Red * 0.5f ? 1f : 2f);
@@ -458,4 +457,5 @@ namespace Celeste.Mod.JackalHelper.Entities {
 
 			//Die();
 		}
-	} }
+	}
+}

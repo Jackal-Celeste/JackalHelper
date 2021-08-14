@@ -1,6 +1,4 @@
 ﻿// Celeste.Booster
-using System;
-using System.Collections;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -40,7 +38,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public ChromaBooster(Vector2 position, bool neo)
 			: base(position, false)
 		{
-			scene = this.Scene;
+			scene = Scene;
 			Player player = JackalModule.GetPlayer();
 			boostData = new DynData<Booster>(this);
 			playerData = new DynData<Player>(player);
@@ -49,12 +47,12 @@ namespace Celeste.Mod.JackalHelper.Entities
 			base.Add(boostData.Get<Sprite>("sprite"));
 			boostData.Get<BloomPoint>("bloom").Alpha = 0.5f;
 			boostData.Get<Sprite>("sprite").Color = color;
-			color1 = boostData.Get<ParticleType>("particleType").Color;
-			color2 = boostData.Get<ParticleType>("particleType").Color2;
+			ParticleType tempParticle = boostData.Get<ParticleType>("particleType");
+			color1 = tempParticle.Color;
+			color2 = tempParticle.Color2;
 			color3 = boostData.Get<ParticleType>("P_Appear").Color;
-			boostData.Get<ParticleType>("particleType").Color = JackalModule.Session.color;
-			boostData.Get<ParticleType>("particleType").Color2 = JackalModule.Session.color;
-			boostData.Get<ParticleType>("P_Appear").Color = JackalModule.Session.color;
+			boostData.Set<ParticleType>("particleType", new ParticleType(tempParticle) { Color = JackalModule.Session.color, Color2 = JackalModule.Session.color });
+
 
 		}
 

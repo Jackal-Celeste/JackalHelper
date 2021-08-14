@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -171,7 +170,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			if (state == States.Wait && DoFlingBird(player, this))
 			{
-				JackalModule.Session.lastBird = this.entityData.ID;
+				JackalModule.Session.lastBird = entityData.ID;
 				flingSpeed = player.Speed * 0.4f;
 				flingSpeed.Y = 120f;
 				flingTargetSpeed = Vector2.Zero;
@@ -186,9 +185,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public bool DoFlingBird(Player player, BraveBird bird)
 		{
-			if (!player.Dead && player.StateMachine.State != JackalModule.braveBirdState)
+			if (!player.Dead && player.StateMachine.State != JackalModule.BraveBirdState)
 			{
-				player.StateMachine.State = JackalModule.braveBirdState;
+				player.StateMachine.State = JackalModule.BraveBirdState;
 				if (player.Holding != null)
 				{
 					player.Drop();
@@ -242,7 +241,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 					Position += flingSpeed * Engine.DeltaTime;
 					break;
 				case States.WaitForLightningClear:
-					if (base.Scene.Entities.FindFirst<Lightning>() == null || base.X > (float)(base.Scene as Level).Bounds.Right)
+					if (base.Scene.Entities.FindFirst<Lightning>() == null || base.X > (Scene as Level).Bounds.Right)
 					{
 						sprite.Scale.X = 1f;
 						state = States.Leaving;
@@ -392,7 +391,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 			player.MoveTowardsX(level.Tracker.GetNearestEntity<BraveBird>(player.Position).Position.X, 250f * Engine.DeltaTime);
 			player.MoveTowardsY(level.Tracker.GetNearestEntity<BraveBird>(player.Position).Position.Y + 8f + player.Collider.Height, 250f * Engine.DeltaTime);
-			return JackalModule.braveBirdState;
+			return JackalModule.BraveBirdState;
 		}
 
 		public void FinishFlingBird()

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -171,7 +170,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			if (state == States.Wait && DoFlingBird(player, this))
 			{
-				JackalModule.Session.lastAltBird = this.entityData.ID;
+				JackalModule.Session.lastAltBird = entityData.ID;
 				flingSpeed = player.Speed * 0.4f;
 				flingSpeed.Y = 120f;
 				flingTargetSpeed = Vector2.Zero;
@@ -242,7 +241,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 					Position += flingSpeed * Engine.DeltaTime;
 					break;
 				case States.WaitForLightningClear:
-					if (base.Scene.Entities.FindFirst<Lightning>() == null || base.X > (float)(base.Scene as Level).Bounds.Right)
+					if (base.Scene.Entities.FindFirst<Lightning>() == null || base.X > (Scene as Level).Bounds.Right)
 					{
 						sprite.Scale.X = 1f;
 						state = States.Leaving;
@@ -403,13 +402,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 			player.AutoJump = true;
 			dyn.Set<int>("forceMoveX", 1);
 			dyn.Set<float>("forceMoveXTimer", 0.2f);
-			foreach(AltBraveBird a in JackalModule.GetLevel().Tracker.GetEntities<AltBraveBird>())
-            {
+			foreach (AltBraveBird a in JackalModule.GetLevel().Tracker.GetEntities<AltBraveBird>())
+			{
 				if (a.entityData.ID == JackalModule.Session.lastAltBird)
-                {
+				{
 					player.Speed = a.flingSpeed;
-                }
-            }
+				}
+			}
 
 			dyn.Set<float>("varJumpTimer", 0.2f);
 			dyn.Set<float>("varJumpSpeed", player.Speed.Y);

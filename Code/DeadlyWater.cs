@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -79,9 +75,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 			killbox = new KillBoxTrigger(data, offset);
 
 			Collidable = false;
-			
-			this.height = data.Height;
-			this.width = data.Width;
+
+			height = data.Height;
+			width = data.Width;
 			Console.WriteLine(Position);
 			Console.WriteLine(killbox.Position);
 			hitbox = new Hitbox(data.Width, currentHeight);
@@ -136,16 +132,17 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 		}
 
-        public override void Awake(Scene scene)
-        { base.Awake(scene);
+		public override void Awake(Scene scene)
+		{
+			base.Awake(scene);
 
 		}
 
-        private void updateVisiblity(Level level)
+		private void updateVisiblity(Level level)
 		{
 			Camera camera = level.Camera;
-			bool horizontalCheck = base.X < camera.Right + (float)horizontalVisiblityBuffer && base.X + base.Width > camera.Left - (float)horizontalVisiblityBuffer;
-			bool verticalCheck = base.Y < camera.Bottom + (float)verticalVisiblityBuffer && base.Y + base.Height > camera.Top - (float)verticalVisiblityBuffer;
+			bool horizontalCheck = base.X < camera.Right + horizontalVisiblityBuffer && base.X + base.Width > camera.Left - horizontalVisiblityBuffer;
+			bool verticalCheck = base.Y < camera.Bottom + verticalVisiblityBuffer && base.Y + base.Height > camera.Top - verticalVisiblityBuffer;
 			visibleOnCamera = horizontalCheck && verticalCheck;
 		}
 
@@ -172,7 +169,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		}
 
 		public bool moistCheck(Player player)
-        {
+		{
 			bool check = false;
 			if (JackalModule.GetLevel() != null)
 			{
@@ -196,7 +193,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				}
 			}
 			return check;
-        }
+		}
 
 
 		private void OnPlayer(Player player)
@@ -214,14 +211,14 @@ namespace Celeste.Mod.JackalHelper.Entities
 			base.Update();
 			changeColor(rayTopColorField, rayTopColor, origRayTop);
 			Player player = JackalModule.GetPlayer();
-			if(player != null)
-            {
+			if (player != null)
+			{
 
-                if (moistCheck(player))
-                {
+				if (moistCheck(player))
+				{
 					player.Die(Vector2.Zero);
-                }
-            }
+				}
+			}
 		}
 
 		public override void Added(Scene scene)

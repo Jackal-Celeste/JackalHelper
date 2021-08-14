@@ -1,16 +1,15 @@
-﻿using Celeste.Mod.Entities;
+﻿using System;
+using System.Collections.Generic;
+using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System;
-using System.Collections.Generic;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
-    [CustomEntity("JackalHelper/LongFish")]
-    [Tracked]
-    public class WaterGeyser : JumpThru
-    {
+	[CustomEntity("JackalHelper/LongFish")]
+	[Tracked]
+	public class WaterGeyser : JumpThru
+	{
 		private readonly int columns;
 		public float totalTime = 0f;
 		public bool canAdd;
@@ -36,7 +35,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			riseRate = rate;
 			this.maxSpeed = maxSpeed;
 
-			
+
 		}
 
 		public WaterGeyser(EntityData data, Vector2 offset)
@@ -85,14 +84,14 @@ namespace Celeste.Mod.JackalHelper.Entities
 				sprite.Position.Y += 3f;
 				sprite.Visible = true;
 				bodySprites.Add(sprite);
-				
+
 				Sprite sprite2 = JackalModule.spriteBank.Create("geyser");
 				//sprite2.Position = Position;
 				sprite2.Position.Y += (35f);
 				sprite2.Position.X += (i * 8f);
-				
+
 				Sprite sprite3 = JackalModule.spriteBank.Create("geyser");
-				
+
 				sprite3.Position.Y += (67f);
 				sprite3.Position.X += (i * 8f);
 
@@ -141,24 +140,24 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 			Depth = 400;
 		}
-        public override void Update()
-        {
+		public override void Update()
+		{
 			if (JackalModule.GetLevel() != null && JackalModule.GetPlayer() != null)
-            {
-				if(JackalModule.GetPlayer().Position.X > Position.X && JackalModule.GetPlayer().Position.X < (Position.X + Width) && JackalModule.GetPlayer().Position.Y > Position.Y)
-                {
+			{
+				if (JackalModule.GetPlayer().Position.X > Position.X && JackalModule.GetPlayer().Position.X < (Position.X + Width) && JackalModule.GetPlayer().Position.Y > Position.Y)
+				{
 					JackalModule.GetPlayer().Speed.Y -= riseRate;
 					JackalModule.GetPlayer().Speed.Y = Math.Max(-maxSpeed, JackalModule.GetPlayer().Speed.Y);
-                }
-				
-            }
+				}
+
+			}
 			MoveV(fourierStepFunction(terms));
-			
-            base.Update();
-        }
+
+			base.Update();
+		}
 
 		public float fourierStepFunction(int terms)
-        {
+		{
 			totalTime += Engine.DeltaTime;
 			float velocity = 0f;
 			/*
@@ -166,18 +165,18 @@ namespace Celeste.Mod.JackalHelper.Entities
 			 * As the number of terms increases, we can limit our oscillations, but also make said oscillations "faster".
 			 * Higher term counts may cause weird momentum.
 			 */
-			for(int i = 0; i <= terms; i++)
-            {
+			for (int i = 0; i <= terms; i++)
+			{
 				velocity += getFourierTerm(i);
-            }
-			return velocity * (scale/80) * (float)(2f / Math.PI);
-        }
+			}
+			return velocity * (scale / 80) * (float)(2f / Math.PI);
+		}
 
 
 		public float getFourierTerm(int termIndex)
-        {
-			return (speed/10f)*(float)Math.Cos((totalTime * speed * 0.05f) + (termIndex * speed * 0.1f * totalTime));
-        }
+		{
+			return (speed / 10f) * (float)Math.Cos((totalTime * speed * 0.05f) + (termIndex * speed * 0.1f * totalTime));
+		}
 
-    }
+	}
 }

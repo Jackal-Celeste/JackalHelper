@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Celeste;
+using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using Celeste.Mod.Entities;
 
-namespace Celeste.Mod.JackalHelper.Entities 
+namespace Celeste.Mod.JackalHelper.Entities
 {
 	[Tracked]
 	[CustomEntity("JackalHelper/DormantDreamBlock")]
@@ -96,7 +90,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 				particles[i].Position = new Vector2(Calc.Random.NextFloat(base.Width), Calc.Random.NextFloat(base.Height));
 				particles[i].Layer = Calc.Random.Choose(0, 1, 1, 2, 2, 2);
 				particles[i].TimeOffset = Calc.Random.NextFloat();
-				particles[i].Color = Color.LightGray * (0.5f + (float)particles[i].Layer / 2f * 0.5f);
+				particles[i].Color = Color.LightGray * (0.5f + particles[i].Layer / 2f * 0.5f);
 			}
 		}
 
@@ -173,7 +167,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				int layer = particles[i].Layer;
 				Vector2 position2 = particles[i].Position;
-				position2 += position * (0.3f + 0.25f * (float)layer);
+				position2 += position * (0.3f + 0.25f * layer);
 				position2 = PutInside(position2);
 				Color color = particles[i].Color;
 				MTexture mTexture;
@@ -249,16 +243,16 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 			float num2 = 0f;
 			int num3 = 16;
-			for (int i = 2; (float)i < num - 2f; i += num3)
+			for (int i = 2; i < num - 2f; i += num3)
 			{
 				float num4 = Lerp(LineAmplitude(wobbleFrom + offset, i), LineAmplitude(wobbleTo + offset, i), wobbleEase);
-				if ((float)(i + num3) >= num)
+				if (i + num3 >= num)
 				{
 					num4 = 0f;
 				}
-				float num5 = Math.Min(num3, num - 2f - (float)i);
+				float num5 = Math.Min(num3, num - 2f - i);
 				Vector2 vector3 = from + vector * i + vector2 * num2;
-				Vector2 vector4 = from + vector * ((float)i + num5) + vector2 * num4;
+				Vector2 vector4 = from + vector * (i + num5) + vector2 * num4;
 				Draw.Line(vector3 - vector2, vector4 - vector2, color2);
 				Draw.Line(vector3 - vector2 * 2f, vector4 - vector2 * 2f, color2);
 				Draw.Line(vector3, vector4, color);
@@ -268,7 +262,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private float LineAmplitude(float seed, float index)
 		{
-			return (float)(Math.Sin((double)(seed + index / 16f) + Math.Sin(seed * 2f + index / 32f) * 6.2831854820251465) + 1.0) * 1.5f;
+			return (float)(Math.Sin(seed + index / 16f + Math.Sin(seed * 2f + index / 32f) * 6.2831854820251465) + 1.0) * 1.5f;
 		}
 
 		private float Lerp(float a, float b, float percent)
@@ -280,5 +274,5 @@ namespace Celeste.Mod.JackalHelper.Entities
 	}
 
 
-	
+
 }

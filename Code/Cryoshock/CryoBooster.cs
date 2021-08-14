@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using Celeste;
+using System.Reflection;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -13,72 +12,51 @@ namespace Celeste.Mod.JackalHelper.Entities
 	[Tracked]
 	public class CryoBooster : Entity
 	{
-		public string reappearSfx;
+		internal static readonly FieldInfo player_boostTarget = typeof(Player).GetField("boostTarget", BindingFlags.Instance | BindingFlags.NonPublic);
 
-		public string enterSfx;
+		private const string reappearSfx = "event:/game/04_cliffside/greenbooster_reappear";
+		private const string enterSfx = "event:/game/04_cliffside/greenbooster_enter";
+		private const string boostSfx = "event:/game/04_cliffside/greenbooster_dash";
+		private const string endSfx = "event:/game/04_cliffside/greenbooster_end";
 
-		public string boostSfx;
+		/// <summary>
+		/// Temporary variable used to store the player's dashcount when entering the CryoBooster
+		/// </summary>
+		internal static int startingDashes = 1;
 
-		public string endSfx;
+		/// <summary>
+		/// Controls whether the player can refill their dashes
+		/// </summary>
+		public bool FrozenDash = false;
 
-		public float BoostTime;
+		// COLOURSOFNOISE: Not entirely sure what the purpose of this one is
+		public static bool hasCryoDash;
 
 		public bool StartedBoosting;
 
-		public Color ParticleColor;
-
-		private float RespawnTime;
-
-		public static readonly Vector2 playerOffset;
+		// Components
+		private Coroutine dashRoutine;
 
 		public Sprite sprite;
-
 		private Entity outline;
 
 		private Wiggler wiggler;
 
-		private BloomPoint bloom;
-
-		private VertexLight light;
-
-		private Coroutine dashRoutine;
-
-		private DashListener dashListener;
-
 		private ParticleType particleType;
+		private Color particleColor;
 
+		// Timers
+		public readonly float FreezeTime = 0.25f;
+		public readonly float RespawnTime = 1f;
+		public readonly float BoostTime = .25f;
+
+		public float FreezeTimer = 0f;
 		private float respawnTimer;
-
 		private float cannotUseTimer;
 
-		private SoundSource loopingSfx;
+		public bool BoostingPlayer { get; private set; }
 
-		public static Vector2 staticPosition;
-
-		public static Level staticScene;
-
-		public bool FrozenDash = false;
-
-		public float freezeTime = 0.25f;
-
-		public float timer = 0f;
-
-		public static int startingDashes = 1;
-
-		public bool crystal = false;
-
-
-		public static bool hasCryoDash;
-
-		public bool storedCryoDash = false;
-
-		public bool BoostingPlayer
-		{
-			get;
-			private set;
-		}
-
-
+		[Pooled]
 		private class BreakDebris : Entity
 		{
 			private Image sprite;
@@ -89,48 +67,30 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 			private float duration;
 
+			public BreakDebris()
+			{
+				Add(sprite = new Image(Calc.Random.Choose(GFX.Game.GetAtlasSubtextures("objects/boosterIce/chunk"))));
+				sprite.CenterOrigin();
+			}
+
 			public BreakDebris Init(Vector2 position, Vector2 direction)
 			{
-				//IL_0067: Unknown result type (might be due to invalid IL or missing references)
-				//IL_0068: Unknown result type (might be due to invalid IL or missing references)
-				//IL_006d: Unknown result type (might be due to invalid IL or missing references)
-				//IL_008d: Unknown result type (might be due to invalid IL or missing references)
-				//IL_0092: Unknown result type (might be due to invalid IL or missing references)
-				//IL_0095: Unknown result type (might be due to invalid IL or missing references)
-				//IL_00bb: Unknown result type (might be due to invalid IL or missing references)
-				//IL_00c0: Unknown result type (might be due to invalid IL or missing references)
-				this.Depth = -1000;
-				List<MTexture> atlasSubtextures = GFX.Game.GetAtlasSubtextures("objects/boosterIce/chunk");
-				MTexture texture = Calc.Random.Choose(atlasSubtextures);
-				if (sprite == null)
-				{
-					Add(sprite = new Image(texture));
-					sprite.CenterOrigin();
-				}
-				else
-				{
-					sprite.Texture = texture;
-				}
-				Position = JackalModule.GetPlayer().Position;
+				Depth = -1000;
+				Position = position;
+				Visible = true;
+
 				direction = Calc.AngleToVector(direction.Angle() + Calc.Random.Range(-0.1f, 0.1f), 1f);
 				direction.X += Calc.Random.Range(-0.3f, 0.3f);
 				direction.Normalize();
-				speed = direction * (float)(Calc.Random.Range(140, 180));
+				speed = direction * Calc.Random.Range(140, 180);
 				percent = 0f;
-				duration = Calc.Random.Range(2, 3);
+				// COLOURSOFNOISE: Calc.Random.Range(2, 3) would only ever return 2
+				duration = Calc.Random.Range(2, 4);
 				return this;
 			}
 
 			public override void Update()
 			{
-				//IL_002d: Unknown result type (might be due to invalid IL or missing references)
-				//IL_0033: Unknown result type (might be due to invalid IL or missing references)
-				//IL_003d: Unknown result type (might be due to invalid IL or missing references)
-				//IL_0042: Unknown result type (might be due to invalid IL or missing references)
-				//IL_0047: Unknown result type (might be due to invalid IL or missing references)
-				//IL_00b0: Unknown result type (might be due to invalid IL or missing references)
-				//IL_00c1: Unknown result type (might be due to invalid IL or missing references)
-				//IL_00c6: Unknown result type (might be due to invalid IL or missing references)
 				base.Update();
 				if (percent >= 1f)
 				{
@@ -146,27 +106,18 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 			public override void Render()
 			{
-				//IL_0007: Unknown result type (might be due to invalid IL or missing references)
 				sprite.DrawOutline(Color.Black);
 				base.Render();
 			}
 		}
 
-		public static ParticleType P_Burst => Booster.P_Burst;
-
-		public static ParticleType P_BurstRed => Booster.P_BurstRed;
-
-		public static ParticleType P_Appear => Booster.P_Appear;
-
-		public static ParticleType P_RedAppear => Booster.P_RedAppear;
-
 		public CryoBooster(EntityData data, Vector2 offset)
 			: base(data.Position + offset)
 		{
 			FrozenDash = false;
-			staticPosition = Position;
-			base.Depth = -8500;
-			base.Collider = new Circle(10f, 0f, 2f);
+			Depth = -8500;
+			Collider = new Circle(10f, 0f, 2f);
+
 			sprite = new Sprite(GFX.Game, "objects/boosterIce/");
 			sprite.Visible = true;
 			sprite.CenterOrigin();
@@ -177,26 +128,22 @@ namespace Celeste.Mod.JackalHelper.Entities
 			sprite.Add("pop", "boosterIce", 0.08f, 14, 15, 16, 17, 18, 19, 20, 21, 22);
 			sprite.Play("loop", false, true);
 			Add(sprite);
-			Add(new PlayerCollider(OnPlayer));
-			Add(light = new VertexLight(Color.White, 1f, 16, 32));
-			Add(bloom = new BloomPoint(0.1f, 16f));
+
 			Add(wiggler = Wiggler.Create(0.5f, 4f, delegate (float f)
 			{
 				sprite.Scale = Vector2.One * (1f + f * 0.25f);
 			}));
-			Add(dashRoutine = new Coroutine(removeOnComplete: false));
-			Add(dashListener = new DashListener());
+
+			Add(new VertexLight(Color.White, 1f, 16, 32));
+			Add(new BloomPoint(0.1f, 16f));
 			Add(new MirrorReflection());
-			Add(loopingSfx = new SoundSource());
-			dashListener.OnDash = OnPlayerDashed;
+
+			Add(new PlayerCollider(OnPlayer));
+			Add(dashRoutine = new Coroutine(removeOnComplete: false));
+			Add(new DashListener(OnPlayerDashed));
+
 			particleType = Booster.P_Burst;
-			RespawnTime = 1f;
-			BoostTime = .25f;
-			ParticleColor = Color.LightBlue;
-			reappearSfx = "event:/game/04_cliffside/greenbooster_reappear";
-			enterSfx = "event:/game/04_cliffside/greenbooster_enter";
-			boostSfx = "event:/game/04_cliffside/greenbooster_dash";
-			endSfx = "event:/game/04_cliffside/greenbooster_end";
+			particleColor = Color.LightBlue;
 		}
 
 		public override void Added(Scene scene)
@@ -208,8 +155,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			outline = new Entity(Position);
 			outline.Depth = 8999;
 			outline.Visible = false;
-			outline.Add(image);
-			outline.Add(new MirrorReflection());
+			outline.Add(image, new MirrorReflection());
 			scene.Add(outline);
 		}
 
@@ -227,7 +173,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			ParticleSystem particlesBG = SceneAs<Level>().ParticlesBG;
 			for (int i = 0; i < 360; i += 30)
 			{
-				particlesBG.Emit(Booster.P_Appear, 1, base.Center, Vector2.One * 2f, ParticleColor, (float)i * ((float)Math.PI / 180f));
+				particlesBG.Emit(Booster.P_Appear, 1, Center, Vector2.One * 2f, particleColor, i * ((float)Math.PI / 180f));
 			}
 		}
 
@@ -237,7 +183,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			if (respawnTimer <= 0f && cannotUseTimer <= 0f && !BoostingPlayer)
 			{
 				cannotUseTimer = 0.45f;
-				Boost(player, this);
+				Boost(player);
 				Audio.Play(enterSfx, Position);
 				wiggler.Start();
 				sprite.Play("inside");
@@ -245,12 +191,12 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 		}
 
-		public static void Boost(Player player, CryoBooster booster)
+		public void Boost(Player player)
 		{
-			player.StateMachine.State = JackalModule.cryoBoostState;
+			player.StateMachine.State = JackalModule.CryoBoostState;
 			player.Speed = Vector2.Zero;
-			JackalModule.player_boostTarget.SetValue(player, booster.Center);
-			booster.StartedBoosting = true;
+			player_boostTarget.SetValue(player, Center);
+			StartedBoosting = true;
 		}
 
 		public void PlayerBoosted(Player player, Vector2 direction)
@@ -258,7 +204,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			StartedBoosting = false;
 			Audio.Play(boostSfx, Position);
 			BoostingPlayer = true;
-			base.Tag = (int)Tags.Persistent | (int)Tags.TransitionUpdate;
+			Tag = Tags.Persistent | Tags.TransitionUpdate;
 			sprite.Play("spin");
 			sprite.FlipX = player.Facing == Facings.Left;
 			outline.Visible = true;
@@ -269,23 +215,22 @@ namespace Celeste.Mod.JackalHelper.Entities
 		private IEnumerator BoostRoutine(Player player, Vector2 dir)
 		{
 			float angle = (-dir).Angle();
-			while ((player.StateMachine.State == 2 || player.StateMachine.State == 5) && BoostingPlayer)
+			while ((player.StateMachine.State == Player.StDash || player.StateMachine.State == Player.StRedDash) && BoostingPlayer)
 			{
 				if (player.Dead)
 				{
-					PlayerDied();
+					PlayerDied(player);
 					continue;
 				}
 				sprite.RenderPosition = player.Center + Booster.playerOffset;
-				loopingSfx.Position = sprite.Position;
-				if (base.Scene.OnInterval(0.02f))
+				if (Scene.OnInterval(0.02f))
 				{
-					(base.Scene as Level).ParticlesBG.Emit(particleType, 2, player.Center - dir * 3f + new Vector2(0f, -2f), new Vector2(3f, 3f), ParticleColor, angle);
+					(Scene as Level).ParticlesBG.Emit(particleType, 2, player.Center - dir * 3f + new Vector2(0f, -2f), new Vector2(3f, 3f), particleColor, angle);
 				}
 				yield return null;
 			}
-			PlayerReleased();
-			if (player.StateMachine.State == 4)
+			PlayerReleased(player);
+			if (player.StateMachine.State == Player.StBoost)
 			{
 				//sprite.Visible = false;
 			}
@@ -293,18 +238,15 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				yield return null;
 			}
-			base.Tag = 0;
+			Tag = 0;
 		}
 
 		public void OnPlayerDashed(Vector2 direction)
 		{
-			if (BoostingPlayer)
-			{
-				BoostingPlayer = false;
-			}
+			BoostingPlayer = false;
 		}
 
-		public void PlayerReleased()
+		public void PlayerReleased(Player player)
 		{
 			Audio.Play(endSfx, sprite.RenderPosition);
 			sprite.Play("pop");
@@ -312,28 +254,24 @@ namespace Celeste.Mod.JackalHelper.Entities
 			respawnTimer = RespawnTime;
 			BoostingPlayer = false;
 			wiggler.Stop();
-			loopingSfx.Stop();
-			if (JackalModule.GetPlayer() != null)
+			for (int x = -12; x < 12; x += 8)
 			{
-				for (int i = 0; (float)i < 24; i += 8)
+				for (int y = -12; y < 12; y += 8)
 				{
-					for (int j = 0; (float)j < 24; j += 8)
-					{
-						base.Scene.Add(Engine.Pooler.Create<BreakDebris>().Init(new Vector2(base.X + (float)i + 4f, base.Y + (float)j + 4f), -(Position - JackalModule.GetPlayer().Position)));
-					}
+					Scene.Add(Engine.Pooler.Create<BreakDebris>().Init(new Vector2(player.X + x, player.Y + y), -(Position - player.Position)));
 				}
 			}
-			timer += Engine.DeltaTime;
+			FreezeTimer += Engine.DeltaTime;
 			JackalModule.Session.HasCryoDash = hasCryoDash;
 		}
 
-		public void PlayerDied()
+		public void PlayerDied(Player player)
 		{
 			if (BoostingPlayer)
 			{
-				PlayerReleased();
+				PlayerReleased(player);
 				dashRoutine.Active = false;
-				base.Tag = 0;
+				Tag = 0;
 			}
 		}
 
@@ -351,42 +289,42 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public override void Update()
 		{
 			base.Update();
-			staticScene = JackalModule.GetLevel();
-            if (!FrozenDash)
-            {
-				crystal = false;
-            }
-			if (timer <= 0f || timer > freezeTime)
+			Player player = Scene.Tracker.GetEntity<Player>();
+
+			if (FreezeTimer <= 0f || FreezeTimer > FreezeTime)
 			{
-				timer = 0f;
+				FreezeTimer = 0f;
 				FrozenDash = false;
 			}
 			else
 			{
-				timer += Engine.DeltaTime;
+				FreezeTimer += Engine.DeltaTime;
 				FrozenDash = true;
-				if (JackalModule.GetPlayer()!= null){
-					if (JackalModule.GetPlayer().Dashes > startingDashes && FrozenDash && startingDashes == 0)
+				if (player != null)
+				{
+					if (player.Dashes > startingDashes && startingDashes == 0)
 					{
-						JackalModule.GetPlayer().Dashes = startingDashes;
-					} }
-				
+						player.Dashes = startingDashes;
+					}
+				}
+
 			}
-			if (JackalModule.GetPlayer() != null && JackalModule.GetLevel() != null)
+
+			if (player != null)
 			{
-				if (JackalModule.GetPlayer().StateMachine.State == JackalModule.cryoBoostState)
+				if (player.StateMachine.State == JackalModule.CryoBoostState)
 				{
 					FrozenDash = true;
 				}
 			}
-			if (JackalModule.GetLevel() != null)
-			{
-				JackalModule.GetLevel().Session.Inventory.NoRefills = FrozenDash;
-			}
+
+			SceneAs<Level>().Session.Inventory.NoRefills = FrozenDash;
+
 			if (cannotUseTimer > 0f)
 			{
 				cannotUseTimer -= Engine.DeltaTime;
 			}
+
 			if (respawnTimer > 0f)
 			{
 				respawnTimer -= Engine.DeltaTime;
@@ -395,19 +333,21 @@ namespace Celeste.Mod.JackalHelper.Entities
 					Respawn();
 				}
 			}
+
 			if (!dashRoutine.Active && respawnTimer <= 0f)
 			{
 				Vector2 target = Vector2.Zero;
-				Player entity = base.Scene.Tracker.GetEntity<Player>();
+				Player entity = Scene.Tracker.GetEntity<Player>();
 				if (entity != null && CollideCheck(entity))
 				{
 					target = entity.Center + Booster.playerOffset - Position;
 				}
 				sprite.Position = Calc.Approach(sprite.Position, target, 80f * Engine.DeltaTime);
 			}
+
 			if (sprite.CurrentAnimationID == "inside" && !BoostingPlayer && !CollideCheck<Player>())
 			{
-				sprite.Play("loop", false, true);
+				sprite.Play("loop", randomizeFrame: true);
 			}
 		}
 
@@ -423,77 +363,42 @@ namespace Celeste.Mod.JackalHelper.Entities
 			sprite.Position = position;
 		}
 
+	}
+	
+	public static class CryoBoostStateExt {
 
-		public static void CryoBoostBegin()
+		public static void CryoBoostBegin(this Player player)
 		{
-			Player player = JackalModule.GetPlayer();
-			hasCryoDash = JackalModule.Session.HasCryoDash;
-			bool? flag = player.SceneAs<Level>()?.Session.MapData.GetMeta()?.TheoInBubble;
-			bool? flag2 = flag;
+			CryoBooster.hasCryoDash = JackalModule.Session.HasCryoDash;
+			bool? theoInBubble = player.SceneAs<Level>()?.Session.MapData.GetMeta()?.TheoInBubble;
 			player.RefillStamina();
-			if (!flag2.GetValueOrDefault())
+			if (!theoInBubble.GetValueOrDefault())
 			{
 				player.Drop();
 			}
-			startingDashes = player.Dashes;
-			staticScene.Session.Inventory.NoRefills = true;
+			CryoBooster.startingDashes = player.Dashes;
+			player.SceneAs<Level>().Session.Inventory.NoRefills = true;
 		}
 
-		public static int CryoBoostUpdate()
+		public static int CryoBoostUpdate(this Player player)
 		{
-			//IL_0012: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
-			//IL_001d: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0027: Unknown result type (might be due to invalid IL or missing references)
-			//IL_002c: Unknown result type (might be due to invalid IL or missing references)
-			//IL_002e: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0033: Unknown result type (might be due to invalid IL or missing references)
-			//IL_003a: Unknown result type (might be due to invalid IL or missing references)
-			//IL_003f: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0044: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0045: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0055: Unknown result type (might be due to invalid IL or missing references)
-			//IL_005a: Unknown result type (might be due to invalid IL or missing references)
-			//IL_005c: Unknown result type (might be due to invalid IL or missing references)
-			//IL_006a: Unknown result type (might be due to invalid IL or missing references)
-			Player player = JackalModule.GetPlayer();
-			Vector2 boostTarget = (Vector2)JackalModule.player_boostTarget.GetValue(player);
+			Vector2 boostTarget = (Vector2)CryoBooster.player_boostTarget.GetValue(player);
 			Vector2 value = Input.Aim.Value * 3f;
 			Vector2 vector = Calc.Approach(player.ExactPosition, boostTarget - player.Collider.Center + value, 80f * Engine.DeltaTime);
 			player.MoveToX(vector.X);
 			player.MoveToY(vector.Y);
-			staticScene.Session.Inventory.NoRefills = true;
+			player.SceneAs<Level>().Session.Inventory.NoRefills = true;
 			if (Input.Dash.Pressed)
 			{
 				Input.Dash.ConsumePress();
-				return 2;
+				return Player.StDash;
 			}
-			JackalModule.Session.HasCryoDash = hasCryoDash;
-			return JackalModule.cryoBoostState;
+			JackalModule.Session.HasCryoDash = CryoBooster.hasCryoDash;
+			return JackalModule.CryoBoostState;
 		}
 
-		public static void CryoBoostEnd()
+		public static IEnumerator CryoBoostCoroutine(this Player player)
 		{
-			//IL_0012: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0018: Unknown result type (might be due to invalid IL or missing references)
-			//IL_001f: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0024: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0029: Unknown result type (might be due to invalid IL or missing references)
-			//IL_002e: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0030: Unknown result type (might be due to invalid IL or missing references)
-			//IL_003e: Unknown result type (might be due to invalid IL or missing references)
-			Player player = JackalModule.GetPlayer();
-			Vector2 boostTarget = (Vector2)JackalModule.player_boostTarget.GetValue(player);
-			Vector2 vector = (boostTarget - player.Collider.Center).Floor();
-			player.MoveToX(vector.X);
-			player.MoveToY(vector.Y);
-			JackalModule.Session.HasCryoDash = hasCryoDash;
-		}
-
-		public static IEnumerator CryoBoostCoroutine()
-		{
-			Player player = JackalModule.GetPlayer();
 			CryoBooster booster = null;
 			foreach (CryoBooster b in player.Scene.Tracker.GetEntities<CryoBooster>())
 			{
@@ -504,14 +409,17 @@ namespace Celeste.Mod.JackalHelper.Entities
 				}
 			}
 			yield return booster.BoostTime;
-			player.StateMachine.State = 2;
-			JackalModule.Session.HasCryoDash = hasCryoDash;
-
+			player.StateMachine.State = Player.StDash;
+			JackalModule.Session.HasCryoDash = CryoBooster.hasCryoDash;
 		}
 
-		static CryoBooster()
+		public static void CryoBoostEnd(this Player player)
 		{
-			playerOffset = new Vector2(0f, -2f);
+			Vector2 boostTarget = (Vector2)CryoBooster.player_boostTarget.GetValue(player);
+			Vector2 vector = (boostTarget - player.Collider.Center).Floor();
+			player.MoveToX(vector.X);
+			player.MoveToY(vector.Y);
+			JackalModule.Session.HasCryoDash = CryoBooster.hasCryoDash;
 		}
 	}
 }

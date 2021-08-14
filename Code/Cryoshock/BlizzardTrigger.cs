@@ -1,21 +1,14 @@
-﻿using System;
+﻿using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
-using Monocle;
-using Celeste.Mod.Entities;
-using Celeste;
-using Celeste.Mod.JackalHelper;
-
-
 
 namespace Celeste.Mod.JackalHelper.Triggers
 {
 	[CustomEntity("JackalHelper/BlizzardTrigger.cs")]
-
 	public class BlizzardTrigger : Trigger
 	{
-		Level level;
-
 		public WindController.Patterns Pattern;
+
+		private Level level;
 
 		public bool heartCheck;
 
@@ -27,11 +20,10 @@ namespace Celeste.Mod.JackalHelper.Triggers
 			: base(data, offset)
 		{
 			Pattern = data.Enum("pattern", WindController.Patterns.None);
-			dormant = (data.Bool("heart"));
+			dormant = data.Bool("heart");
 		}
 
-
-		public void SetColorGrade(String str)
+		public void SetColorGrade(string str)
 		{
 			level.NextColorGrade(str);
 		}
@@ -39,7 +31,8 @@ namespace Celeste.Mod.JackalHelper.Triggers
 		public override void OnStay(Player player)
 		{
 			//dormant set to true if data.Bool("heart")
-			level = base.Scene as Level;
+			level = Scene as Level;
+			// COLOURSOFNOISE: you should use a less generic flag to avoid conflicts
 			heartCheck = level.Session.GetFlag("flagged");
 			if (heartCheck)
 			{
@@ -53,12 +46,12 @@ namespace Celeste.Mod.JackalHelper.Triggers
 
 		public void StartBlizzard(Player player, Level level)
 		{
-			WindController windController = base.Scene.Entities.FindFirst<WindController>();
+			WindController windController = level.Entities.FindFirst<WindController>();
 			//SetColorGrade("cryo");
 			if (windController == null)
 			{
 				windController = new WindController(Pattern);
-				base.Scene.Add(windController);
+				level.Add(windController);
 			}
 			windController.SetPattern(Pattern);
 		}

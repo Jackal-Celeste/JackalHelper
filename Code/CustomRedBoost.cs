@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Celeste;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
-    public class CustomRedBoost
-    {
+	public class CustomRedBoost
+	{
 		private static float timer;
 
 		private static DynData<Player> dyn;
@@ -40,20 +35,20 @@ namespace Celeste.Mod.JackalHelper.Entities
 			time = 0;
 			//dir = Input.Aim.Value;
 			time++;
-			
+
 		}
 
 		public static IEnumerator Coroutine()
 		{
 			yield return 0.25f;
 			dir = (Input.Aim.Value == Vector2.Zero ? Vector2.UnitX : Input.Aim.Value);
-			
+
 			Player player = JackalModule.GetPlayer();
 			if (dyn == null)
 			{
 				dyn = new DynData<Player>(player);
 			}
-			
+
 			//player.Speed = CorrectDashPrecision(dir) * JackalModule.Session.lastBooster.launchSpeed * (float)Math.Pow(1 + (double)JackalModule.Session.lastBooster.decayRate, (double)time);
 			_ = player.Speed;
 			Vector2 value = Vector2.Zero;
@@ -68,15 +63,15 @@ namespace Celeste.Mod.JackalHelper.Entities
 					player.Facing = (Facings)Math.Sign(player.DashDir.X);
 				}
 				yield return null;
-				
+
 			}
 		}
 
 		public static int Update()
 		{
 			Player player = JackalModule.GetPlayer();
-			
-			
+
+
 			player.LastBooster = null;
 			time++;
 			totalTime += Engine.DeltaTime;
@@ -85,7 +80,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				timer -= Engine.DeltaTime;
 				player.Center = new DynData<Player>(player).Get<Vector2>("boostTarget");
-				return JackalModule.customRedBoostState;
+				return JackalModule.CustomRedBoostState;
 			}
 			int num = (int)rdU.Invoke(player, new object[0]);
 			if (JackalModule.Session.lastBooster == null)
@@ -101,36 +96,36 @@ namespace Celeste.Mod.JackalHelper.Entities
 				{
 					player.Dashes = Math.Max(player.Dashes, JackalModule.Session.lastBooster.dashes);
 				}
-				if(dir == null)
-                {
+				if (dir == null)
+				{
 					dir = Vector2.UnitX * (float)JackalModule.GetPlayer().Facing;
-                }
+				}
 				//dir.Normalize();
-				
-				player.Speed = ((dir.X != 0 && dir.Y != 0) ? 1f/(float)Math.Sqrt(2) : 1f) * (quirky + /*CorrectDashPrecision(dir)*/ dir *   JackalModule.Session.lastBooster.launchSpeed * (float)Math.Pow((double)JackalModule.Session.lastBooster.decayRate, (double)time));
+
+				player.Speed = ((dir.X != 0 && dir.Y != 0) ? 1f / (float)Math.Sqrt(2) : 1f) * (quirky + /*CorrectDashPrecision(dir)*/ dir * JackalModule.Session.lastBooster.launchSpeed * (float)Math.Pow(JackalModule.Session.lastBooster.decayRate, time));
 
 				//player.Speed = quirky + CorrectDashPrecision(dir * JackalModule.Session.lastBooster.launchSpeed * (float)Math.Pow((double)JackalModule.Session.lastBooster.decayRate, (double)time));
 			}
 
 			if (num != 5)
-            {
+			{
 				time = 0;
-            }
-            if (Input.Jump.Pressed && JackalModule.Session.lastBooster.canJump)
-            {
+			}
+			if (Input.Jump.Pressed && JackalModule.Session.lastBooster.canJump)
+			{
 				JackalModule.GetPlayer().Jump();
 				JackalModule.GetPlayer().Speed.Y *= 2f;
 				return 0;
-            }
-            if (Input.Dash.Pressed)
-            {
+			}
+			if (Input.Dash.Pressed)
+			{
 				JackalModule.GetPlayer().StartDash();
 				return 2;
-            }
-			if(JackalModule.GetPlayer().Facing == Facings.Right && JackalModule.GetPlayer().CollideCheck<SolidTiles>(JackalModule.GetPlayer().CenterRight + Vector2.UnitX) || JackalModule.GetPlayer().CollideCheck<Solid>(JackalModule.GetPlayer().CenterRight + Vector2.UnitX))
-            {
+			}
+			if (JackalModule.GetPlayer().Facing == Facings.Right && JackalModule.GetPlayer().CollideCheck<SolidTiles>(JackalModule.GetPlayer().CenterRight + Vector2.UnitX) || JackalModule.GetPlayer().CollideCheck<Solid>(JackalModule.GetPlayer().CenterRight + Vector2.UnitX))
+			{
 				return 0;
-            }
+			}
 			if (JackalModule.GetPlayer().Facing == Facings.Left && JackalModule.GetPlayer().CollideCheck<SolidTiles>(JackalModule.GetPlayer().CenterLeft - Vector2.UnitX) || JackalModule.GetPlayer().CollideCheck<Solid>(JackalModule.GetPlayer().CenterLeft - Vector2.UnitX))
 			{
 				return 0;
@@ -145,7 +140,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 			player.Sprite.Visible = (num != 5);
 			player.Hair.Visible = (num != 5);
-			return (num == 5) ? JackalModule.customRedBoostState : num;
+			return (num == 5) ? JackalModule.CustomRedBoostState : num;
 		}
 
 		public static void End()
