@@ -1,4 +1,4 @@
-﻿// Example usings.
+// Example usings.
 using System;
 using System.Collections;
 using Celeste.Mod.JackalHelper.Entities;
@@ -56,7 +56,7 @@ namespace Celeste.Mod.JackalHelper
 		public static bool TryGetPlayer(out Player player)
 		{
 			player = GetPlayer();
-			return player is not null;
+			return player != null;
 		}
 
 		public static Level GetLevel()
