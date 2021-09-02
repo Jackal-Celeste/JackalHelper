@@ -58,8 +58,26 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public GrapplingHook hook;
 
-		public GrappleGem(Vector2 position) : base(position)
+
+		//plugin options
+		public bool cutscene = true;
+		public string text1 = "You Got a Grappling Hook!";
+		public string textColor1 = "00FFFF";
+		public string text2 = "Press Grab to Launch It!";
+		public string textColor2 = "00FFFF";
+		public float particleSpeed = 0.25f;
+		public bool skipCutscene = false;
+
+
+		public GrappleGem(Vector2 position, string text1,  string text2, string textColor1, string textColor2, float particleSpeed, bool skipCutscene) : base(position)
 		{
+			this.text1 = text1;
+			this.textColor1 = textColor1;
+			this.text2 = text2;
+			this.textColor2 = textColor2;
+			this.particleSpeed = particleSpeed;
+			this.skipCutscene = skipCutscene;
+
 			//IL_0013: Unknown result type (might be due to invalid IL or missing references)
 			if (JackalModule.Session.hasGrapple)
 			{
@@ -187,6 +205,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				//SceneAs<Level>().Particles.Emit(shineParticle, 1, base.Center, Vector2.One * 8f);
 			}
+			if(JackalModule.GetLevel() != null && JackalModule.Session.hasGrapple)
+			{
+				Visible = false;
+				RemoveSelf();
+			}
 		}
 
 
@@ -227,10 +250,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private void Collect(Player player)
 		{
-			base.Scene.Tracker.GetEntity<AngryOshiro>()?.StopControllingTime();
-			Coroutine coroutine = new Coroutine(CollectRoutine(player));
-			coroutine.UseRawDeltaTime = true;
-			Add(coroutine);
+			if (!skipCutscene)
+			{
+				base.Scene.Tracker.GetEntity<AngryOshiro>()?.StopControllingTime();
+				Coroutine coroutine = new Coroutine(CollectRoutine(player));
+				coroutine.UseRawDeltaTime = true;
+				Add(coroutine);
+			}
 			collected = true;
 
 		}
@@ -280,7 +306,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 
 
-		public GrappleGem(EntityData data, Vector2 offset) : this(data.Position + offset)
+		public GrappleGem(EntityData data, Vector2 offset) : this(data.Position + offset, data.Attr("topText", defaultValue:"You Got a Grappling Hook!"), data.Attr("bottomText", defaultValue:"Press Grab to Launch It!"), data.Attr("topTextColor", defaultValue:"00FFFF"), data.Attr("bottomTextColor", defaultValue:"00FFFF"), data.Float("particleSpeed", defaultValue:0.25f), data.Bool("skipCutscene", defaultValue:false))
 		{
 
 			entityID = new EntityID(data.Level.Name, data.ID);
@@ -355,23 +381,23 @@ namespace Celeste.Mod.JackalHelper.Entities
 			level.Frozen = true;
 
 
-			poem = new CustomPoem("You Got a Grappling Hook!", 3, 0f);
+			poem = new CustomPoem(text1, 3, 0f);
 			//dynData = new DynData<Poem>(poem);
 			poem.Alpha = 0f;
 			poem.Offset -= Vector2.UnitY * 360f;
 			poem.Heart.Visible = false;
-			poem.ParticleSpeed = 0.25f;
-			poem.Color = Calc.HexToColor("00FFFF");
+			poem.ParticleSpeed = particleSpeed;
+			poem.Color = Calc.HexToColor(textColor1);
 			//dynData.Set<Color>("Color", Calc.HexToColor("FFA500"));
 			//dynData.Set<Particle[]>("particles", new Particle[1]);
 
-			poem2 = new CustomPoem("Press Grab to Launch It!", 3, 0f);
+			poem2 = new CustomPoem(text2, 3, 0f);
 			//dynData = new DynData<Poem>(poem2);
 			poem2.Alpha = 0f;
 			poem2.Offset += Vector2.UnitY * 360f;
 			poem2.Heart.Visible = false;
-			poem2.ParticleSpeed = 0.25f;
-			poem2.Color = Calc.HexToColor("00FFFF");
+			poem2.ParticleSpeed = particleSpeed;
+			poem2.Color = Calc.HexToColor(textColor2);
 			//dynData.Set<Color>("Color", Calc.HexToColor("FFA500"));
 			//dynData.Set<Particle[]>("particles", new Poem.Particle[1]);
 

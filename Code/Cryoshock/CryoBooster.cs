@@ -388,8 +388,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 			player.MoveToX(vector.X);
 			player.MoveToY(vector.Y);
 			player.SceneAs<Level>().Session.Inventory.NoRefills = true;
-			if (Input.Dash.Pressed)
+			bool pressed = (Input.Dash.Pressed || Input.CrouchDashPressed);
+			if (pressed)
 			{
+				Input.CrouchDash.ConsumePress();
 				Input.Dash.ConsumePress();
 				return Player.StDash;
 			}

@@ -55,6 +55,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 				{
 					alive = false;
 				}
+				if(JackalModule.GetPlayer() != null && Vector2.Distance(JackalModule.GetPlayer().Center, Position) < 16f)
+				{
+					alive = false;
+				}
 			}
 
 			Collidable = alive;

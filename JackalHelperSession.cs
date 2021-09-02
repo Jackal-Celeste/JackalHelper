@@ -26,6 +26,8 @@ namespace Celeste.Mod.JackalHelper
 
 		public bool dashQueue { get; set; } = false;
 
+		public bool grappleStored { get; set; } = false;
+
 		// COLOURSOFNOISE: it's generally a bad idea to store entities in session/save data
 		public CustomRedBooster lastBooster { get; set; } = null;
 	}

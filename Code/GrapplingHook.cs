@@ -13,8 +13,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public Vector2 Speed;
 
-		public Holdable Hold;
-
 		private Sprite sprite;
 
 		private bool dead;
@@ -43,6 +41,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public Vector2 startDistance = Vector2.Zero;
 		public bool canSetPos = true;
+
+		public float lastSpeedX = 0f;
 		public GrapplingHook(Vector2 position)
 			: base(position)
 		{
@@ -57,12 +57,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 			base.Collider = new Hitbox(8f, 10f, -4f, -10f);
 			Add(sprite = GFX.SpriteBank.Create("theo_crystal"));
 			sprite.Scale.X = -1f;
-			Add(Hold = new Holdable(0.1f));
-			Hold.SlowFall = false;
-			Hold.SlowRun = false;
-			Hold.SpeedGetter = () => Speed;
-			Hold.PickupCollider = new Hitbox(0f, 0f);
-			Hold.OnPickup = null;
 			onCollideH = OnCollideH;
 			onCollideV = OnCollideV;
 			LiftSpeedGraceTime = 0.1f;
@@ -82,13 +76,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 			base.Added(scene);
 			Level = SceneAs<Level>();
 			frozen = false;
-			foreach (GrapplingHook entity in Level.Tracker.GetEntities<GrapplingHook>())
-			{
-				if (entity != this && entity.Hold.IsHeld)
-				{
-					RemoveSelf();
-				}
-			}
 
 			thrown = true;
 			thrownY = Y;
@@ -103,6 +90,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Update()
 		{
+			if(!grappled && Speed.X == 0f)
+			{
+				Die();
+			}
+
 			if (JackalModule.GetPlayer() != null)
 			{
 				if ((JackalModule.GetPlayer().Position - Position).Length() > 120f)
@@ -126,12 +118,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 					swatTimer -= Engine.DeltaTime;
 				}
 				base.Depth = 100;
-				if (Hold.IsHeld)
-				{
-					prevLiftSpeed = Vector2.Zero;
-				}
-				else
-				{
+
 					if (OnGround())
 					{
 						float target = ((!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f)));
@@ -216,11 +203,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 						MoveH(32f * Engine.DeltaTime);
 					}
 					Player entity = base.Scene.Tracker.GetEntity<Player>();
-				}
-				if (!dead)
-				{
-					Hold.CheckAgainstColliders();
-				}
+				
 
 
 			}
@@ -251,6 +234,14 @@ namespace Celeste.Mod.JackalHelper.Entities
 						thrown = false;
 						RemoveSelf();
 					}
+					if (Input.Dash.Check)
+					{
+						//JackalModule.GetPlayer().Speed.X *= 1.5f;
+						grappled = false;
+						canSetPos = true;
+						thrown = false;
+						RemoveSelf();
+					}
 					if ((JackalModule.GetPlayer().Position - Position).Length() < 24f)
 					{
 						grappled = false;
@@ -258,6 +249,14 @@ namespace Celeste.Mod.JackalHelper.Entities
 						thrown = false;
 						RemoveSelf();
 					}
+					else if(Speed.X == 0f && !(grappled && thrown))
+					{
+						grappled = false;
+						canSetPos = true;
+						thrown = false;
+						RemoveSelf();
+					}
+
 				}
 			}
 			if (JackalModule.GetLevel() != null)
@@ -274,7 +273,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 
 
-
+			lastSpeedX = Speed.X;
 
 			/*
 			if(JackalModule.GetPlayer().Speed != moveDistance && grappled)

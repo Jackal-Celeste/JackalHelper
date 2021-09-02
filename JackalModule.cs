@@ -120,8 +120,6 @@ namespace Celeste.Mod.JackalHelper
 
 			On.Celeste.FireBarrier.OnPlayer += SafeLava;
 
-			On.Celeste.Player.ReflectionFallCoroutine += BadelineBoostDownFall;
-
 			On.Celeste.Player.Update += grappleUpdate;
 			IL.Celeste.OuiJournalProgress.ctor += ModJournalProgressPageConstructCryo;
 			mod_OuiFileSelectSlot_orig_Render = new ILHook(
@@ -132,22 +130,6 @@ namespace Celeste.Mod.JackalHelper
 			// UNIMPLEMENTED
 			On.Celeste.Level.Render += bloodRender;
 			On.Celeste.Player.UpdateHair += GaleHairUpdate;
-
-
-			//On.Celeste.Spikes.OnCollide += CryoDash;
-			//On.Celeste.TriggerSpikes.OnCollide += CryoDash;
-			//On.Celeste.Player.DashEnd += CryoDashEnd;
-			//On.Celeste.Player.ClimbBoundsCheck += PlayerOnClimbBoundsCheck;
-			//On.Celeste.HeartGemDisplay.ctor += HeartGemDisplay_ctor;
-			//On.Celeste.HeartGemDisplay.Update += HeartGemDisplay_Update;
-			//On.Celeste.HeartGemDisplay.ctor += HeartGemDisplay_ctor;
-			//On.Celeste.HeartGemDisplay.Render += HeartGemDisplay_Render;
-			//On.Celeste.Booster.OnPlayer += pyroBoosterMelt;
-			//IL.Celeste.OuiChapterPanel.Option.Render += CryoshockCustomTag3;
-
-			//Player.add_DashEnd((On.Celeste.Player.hook_DashEnd)(object)new On.Celeste.Player.hook_DashEnd(CryoDashEnd));
-			//Player.add_DashBegin((On.Celeste.Player.hook_DashBegin)(object)new On.Celeste.Player.hook_DashBegin(CryoDashBegin));
-			//PlayerHair.add_GetHairColor((On.Celeste.PlayerHair.hook_GetHairColor)(object)new On.Celeste.PlayerHair.hook_GetHairColor(CryoDashHairColor));
 		}
 
 		#region PlayerStates
@@ -402,7 +384,7 @@ namespace Celeste.Mod.JackalHelper
             	}
         	}
 			GrapplingHook hook;
-			if (Input.Grab.Pressed && Session.hasGrapple && !self.CollideCheck<Solid>(self.Position + (self.Facing == Facings.Right ? 16f : -16f) * Vector2.UnitX) && grappleRespawnTime < 0f)
+			if (Input.Grab.Pressed && (Session.hasGrapple || Session.grappleStored) && !self.CollideCheck<Solid>(self.Position + (self.Facing == Facings.Right ? 16f : -16f) * Vector2.UnitX) && grappleRespawnTime < 0f)
 			{
 				foreach (GrapplingHook currentHook in GetLevel().Tracker.GetEntities<GrapplingHook>())
 				{
@@ -410,6 +392,10 @@ namespace Celeste.Mod.JackalHelper
 				}
 				GetLevel().Add(hook = new GrapplingHook(self.Position));
 				grappleRespawnTime = 0.4f;
+				if (Session.grappleStored)
+				{
+					Session.grappleStored = false;
+				}
 			}
 			else
 			{
@@ -670,33 +656,6 @@ namespace Celeste.Mod.JackalHelper
 			orig.Invoke(self, player);
 		}
 
-		// COLOURSOFNOISE: This effects all modded levels, and can cause mod conflicts
-		private static IEnumerator BadelineBoostDownFall(On.Celeste.Player.orig_ReflectionFallCoroutine orig, Player player)
-		{
-			if (player.SceneAs<Level>().Session.Area.GetLevelSet() == "Celeste")
-			{
-				IEnumerator enumerator = orig.Invoke(player);
-				while (enumerator.MoveNext())
-				{
-					yield return enumerator.Current;
-				}
-				yield break;
-			}
-			player.Sprite.Play("bigFall");
-			player.Speed.Y = 0f;
-			yield return null;
-			FallEffects.Show(visible: true);
-			player.Speed.Y = 320f;
-			while (!player.CollideCheck<Water>())
-			{
-				yield return null;
-			}
-			Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
-			FallEffects.Show(visible: false);
-			player.Sprite.Play("bigFallRecover");
-			yield return 1.2f;
-			player.StateMachine.State = 0;
-		}
 
 		// Unload the entirety of your mod's content. Free up any native resources.
 		public override void Unload()
@@ -730,8 +689,6 @@ namespace Celeste.Mod.JackalHelper
 
 			On.Celeste.FireBarrier.OnPlayer -= SafeLava;
 
-			On.Celeste.Player.ReflectionFallCoroutine -= BadelineBoostDownFall;
-
 			On.Celeste.Player.Update -= grappleUpdate;
 
 			On.Celeste.Level.Render -= bloodRender;
@@ -739,52 +696,11 @@ namespace Celeste.Mod.JackalHelper
 
 			IL.Celeste.OuiJournalProgress.ctor -= ModJournalProgressPageConstructCryo;
 			mod_OuiFileSelectSlot_orig_Render.Dispose();
-			//On.Celeste.Booster.OnPlayer -= pyroBoosterMelt;
-			//On.Celeste.Spikes.OnCollide -= CryoDash;
-			//On.Celeste.TriggerSpikes.OnCollide -= CryoDash;
-			//On.Celeste.Player.DashEnd -= CryoDashEnd;
-			//On.Celeste.Player.ClimbBoundsCheck -= PlayerOnClimbBoundsCheck;
-			//On.Celeste.HeartGemDisplay.Update -= HeartGemDisplay_Update;
-			//On.Celeste.Player.Die -= visible;
-			//On.Celeste.HeartGemDisplay.ctor -= HeartGemDisplay_ctor;
-			//.Celeste.HeartGemDisplay.Render -= HeartGemDisplay_Render;
-			//IL.Celeste.OuiChapterPanel.Option.Render -= CryoshockCustomTag3;
 		}
 
 		#endregion
 
-		private void HeartGemDisplay_Render1(On.Celeste.HeartGemDisplay.orig_Render orig, HeartGemDisplay self)
-		{
-			throw new NotImplementedException();
-		}
-
-		private void HeartGemDisplay_ctor(On.Celeste.HeartGemDisplay.orig_ctor orig, HeartGemDisplay self, int heartGem, bool hasGem)
-		{
-			if (self.Entity is OuiChapterPanel panel)
-			{
-				if (TryGetChapterPanel(out OuiChapterPanel p))
-				{
-					if (p != null)
-					{
-						if (p.Area.LevelSet == "Jackal/Cryoshock")
-						{
-
-							//if (p.Area.SID == "Jackal/Cryoshock/Cryoshock-D")
-							//{
-							Sprite[] sprites = new Sprite[3];
-							sprites[0] = sprites[1] = sprites[2] = JackalModule.guiSpriteBank.Create("heartCryo");
-							sprites[0].Scale = Vector2.One;
-							//sprites[2].Visible = false;
-							new DynData<HeartGemDisplay>(self).Get<Sprite[]>("Sprites")[2] = JackalModule.guiSpriteBank.Create("heartCryo");
-							new DynData<HeartGemDisplay>(self).Set("Sprites", sprites);
-
-							//}
-						}
-					}
-				}
-			}
-			orig.Invoke(self, heartGem, hasGem);
-		}
+		
 
 
 		private void ModJournalProgressPageConstructCryo(ILContext il)
@@ -891,40 +807,6 @@ namespace Celeste.Mod.JackalHelper
 			return data;
 		}
 
-		public void HeartGemDisplay_Render(On.Celeste.HeartGemDisplay.orig_Render orig, HeartGemDisplay self)
-		{
-			orig.Invoke(self);
-			/*
-			if (self.Entity is OuiChapterPanel panel)
-			{
-				if (CryoshockCustomTag2(out OuiChapterPanel p))
-				{
-					if (p != null)
-					{
-						if (p.Area.LevelSet == "Jackal/Cryoshock")
-						{
-
-							if (p.Area.SID == "Jackal/Cryoshock/Cryoshock-D")
-							{
-								Sprite[] sprites = new Sprite[3];
-								sprites[0] = sprites[1] = sprites[2] = JackalModule.guiSpriteBank.Create("heartCryo");
-								sprites[0].Scale = Vector2.One;
-								new DynData<HeartGemDisplay>(self).Get<Sprite[]>("Sprites")[2] = sprites[2];
-								new DynData<HeartGemDisplay>(self).Get<Sprite[]>("Sprites")[1] = sprites[1];
-								new DynData<HeartGemDisplay>(self).Get<Sprite[]>("Sprites")[0] = sprites[0];
-
-							}
-						}
-					}
-				}
-			}*/
-
-		}
-
-		private void HeartGemDisplay_Update(On.Celeste.HeartGemDisplay.orig_Update orig, HeartGemDisplay self)
-		{
-			orig.Invoke(self);
-		}
 
 	}
 }
