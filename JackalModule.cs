@@ -126,10 +126,14 @@ namespace Celeste.Mod.JackalHelper
 				typeof(OuiFileSelectSlot).GetMethod("orig_Render", BindingFlags.Public | BindingFlags.Instance),
 				ModFileSelectSlotRenderCryo
 			);
+			On.Celeste.Player.ClimbJump += Player_ClimbJump;
+			On.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
 
 			// UNIMPLEMENTED
 			On.Celeste.Level.Render += bloodRender;
 			On.Celeste.Player.UpdateHair += GaleHairUpdate;
+
+			
 		}
 
 		#region PlayerStates
@@ -155,6 +159,34 @@ namespace Celeste.Mod.JackalHelper
 			Session.CryoDashActive = Session.HasCryoDash;
 			orig.Invoke(self);
 		}
+
+		private void Player_ClimbJump(On.Celeste.Player.orig_ClimbJump orig, Player self)
+		{
+			if (!ClimbBlocker.Check(self.Scene, self, self.Position + Vector2.UnitX * (float)self.Facing))
+			{
+				if (Session.inStaminaZone)
+				{
+					self.RefillStamina();
+				}
+			}
+			orig.Invoke(self);
+		}
+
+		private int Player_ClimbUpdate(On.Celeste.Player.orig_ClimbUpdate orig, Player self)
+		{
+			if (ClimbBlocker.Check(self.Scene, self, self.Position + Vector2.UnitX * (float)self.Facing))
+			{
+				return orig.Invoke(self);
+			}
+			if (Session.inStaminaZone) 
+			{ 
+				self.RefillStamina();	
+			}
+			return orig.Invoke(self);
+		}
+
+
+
 
 		public void beginWind(Vector2 pos, Scene scene)
 		{
@@ -696,6 +728,9 @@ namespace Celeste.Mod.JackalHelper
 
 			IL.Celeste.OuiJournalProgress.ctor -= ModJournalProgressPageConstructCryo;
 			mod_OuiFileSelectSlot_orig_Render.Dispose();
+
+			On.Celeste.Player.ClimbJump -= Player_ClimbJump;
+			On.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
 		}
 
 		#endregion
