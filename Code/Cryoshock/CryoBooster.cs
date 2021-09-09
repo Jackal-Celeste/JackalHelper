@@ -418,10 +418,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public static void CryoBoostEnd(this Player player)
 		{
 			Vector2 boostTarget = (Vector2)CryoBooster.player_boostTarget.GetValue(player);
-			Vector2 vector = (boostTarget - player.Collider.Center).Floor();
-			player.MoveToX(vector.X);
-			player.MoveToY(vector.Y);
+
 			JackalModule.Session.HasCryoDash = CryoBooster.hasCryoDash;
+			Vector2 vector = (boostTarget - player.Collider.Center).Floor();
+			player.MoveToX(vector.X, null);
+			player.MoveToY(vector.Y, null);
 		}
 	}
 }

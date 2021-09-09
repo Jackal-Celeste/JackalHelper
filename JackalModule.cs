@@ -93,6 +93,7 @@ namespace Celeste.Mod.JackalHelper
 			// Other Effects
 			On.Celeste.IceBlock.OnPlayer += SafeIce;
 			On.Celeste.SandwichLava.OnPlayer += CryoStand;
+			On.Celeste.Player.SuperJump += cryoBubbleHyper;
 			// Rendering
 			On.Celeste.PlayerHair.GetHairColor += CryoDashHairColor;
 
@@ -222,6 +223,21 @@ namespace Celeste.Mod.JackalHelper
 				Session.CryoDashActive = false;
 				Session.HasCryoDash = false;
 			}
+		}
+
+
+		private void cryoBubbleHyper(On.Celeste.Player.orig_SuperJump orig, Player self)
+		{
+			bool ducking = self.Ducking;
+			foreach (CryoBooster entity in self.Scene.Tracker.GetEntities<CryoBooster>())
+			{
+				if (!self.OnGround() && Vector2.Distance(entity.Position + 8* Vector2.One, self.Center) < 12f)
+				{
+					self.Ducking = true;
+				}
+			}
+			orig.Invoke(self);
+			//self.Ducking = ducking;
 		}
 
 		private PlayerDeadBody remove_CryoEffects(On.Celeste.Player.orig_Die orig, Player player, Vector2 direction, bool evenIfInvincible = false, bool registerDeathInStats = true)
@@ -741,6 +757,7 @@ namespace Celeste.Mod.JackalHelper
 
 			On.Celeste.IceBlock.OnPlayer -= SafeIce;
 			On.Celeste.SandwichLava.OnPlayer -= CryoStand;
+			On.Celeste.Player.SuperJump -= cryoBubbleHyper;
 
 			On.Celeste.PlayerHair.GetHairColor -= CryoDashHairColor;
 
