@@ -129,9 +129,7 @@ namespace Celeste.Mod.JackalHelper
 			On.Celeste.Player.ClimbJump += Player_ClimbJump;
 			On.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
 
-			// UNIMPLEMENTED
-			On.Celeste.Level.Render += bloodRender;
-			On.Celeste.Player.UpdateHair += GaleHairUpdate;
+			
 
 			
 		}
@@ -150,11 +148,6 @@ namespace Celeste.Mod.JackalHelper
 
 		private void Player_DashBegin(On.Celeste.Player.orig_DashBegin orig, Player self)
 		{
-			if (Session.HasGaleDash)
-			{
-				beginWind(Input.Aim.Value, self.Scene);
-				Session.GaleDashActive = true;
-			}
 			Session.PowerDashActive = Session.HasPowerDash;
 			Session.CryoDashActive = Session.HasCryoDash;
 			orig.Invoke(self);
@@ -219,11 +212,6 @@ namespace Celeste.Mod.JackalHelper
 		private void Player_DashEnd(On.Celeste.Player.orig_DashEnd orig, Player self)
 		{
 			orig.Invoke(self);
-			if (self.StateMachine.State != Player.StDash && Session.GaleDashActive)
-			{
-				Session.GaleDashActive = false;
-				Session.HasGaleDash = false;
-			}
 			if (self.StateMachine.State != Player.StDash && Session.PowerDashActive)
 			{
 				Session.PowerDashActive = false;
@@ -270,36 +258,14 @@ namespace Celeste.Mod.JackalHelper
 			{
 				return Color.AliceBlue;
 			}
-
-			else if (Session.HasGaleDash || Session.GaleDashActive)
-			{
-				self.SimulateMotion = true;
-				return Color.LightGreen;
-			}
 			else if (Session.HasPowerDash || Session.PowerDashActive)
 			{
 				return Color.Yellow;
 			}
-			/*
-			if (GetLevel() != null && GetPlayer() != null && self.Scene.Tracker.GetEntities<CryoBooster>().Count > 0)
-			{
-				foreach (CryoBooster entity in self.Scene.Tracker.GetEntities<CryoBooster>())
-				{
-					if (entity.FrozenDash)
-					{
-						Vector2 scale = new Vector2(Math.Abs(self.Sprite.Scale.X) * (float)self.Facing, self.Sprite.Scale.Y);
-						return Color.AliceBlue;
-					}
-				}
-			}
-			*/
 			return orig.Invoke(self, index);
 		}
 
-		public void GaleHairUpdate(On.Celeste.Player.orig_UpdateHair orig, Player self, bool applyGravity)
-		{
-			orig.Invoke(self, applyGravity);
-		}
+
 
 		#endregion
 
@@ -348,14 +314,6 @@ namespace Celeste.Mod.JackalHelper
 				_ => Color.Lerp(Color.Purple, Color.Red, time % 1f),
 			};
 			return color * 0.8f;
-		}
-
-		private void bloodRender(On.Celeste.Level.orig_Render orig, Level self)
-		{
-
-			//ScreenWipe.WipeColor = Calc.HexToColor("440003");
-
-			orig.Invoke(self);
 		}
 
 		private void Player_Render(On.Celeste.Player.orig_Render orig, Player self)
@@ -437,6 +395,90 @@ namespace Celeste.Mod.JackalHelper
 		}
 
 		#region CryoShock
+
+
+		private static int curSlot = -1;
+		private void ModFileSelectSlotRenderCryo(ILContext il)
+		{
+			ILCursor cursor = new ILCursor(il);
+			if (cursor.TryGotoNext(MoveType.After,
+								instr => instr.MatchLdstr("cassette"),
+								instr => instr.MatchCallvirt<Atlas>("get_Item")))
+			{
+				Logger.Log(LogLevel.Info, "AltSidesHelper", $"Modding file select slot at {cursor.Index} in IL for OuiFileSelectSlot.orig_Render, for custom cassettes (1/2).");
+				cursor.Emit(OpCodes.Ldarg_0);
+				cursor.Emit(OpCodes.Ldfld, typeof(OuiFileSelectSlot).GetField("SaveData"));
+				cursor.Emit(OpCodes.Ldloc_S, il.Method.Body.Variables[11]);
+				// literally just tell it to render nothing
+				cursor.EmitDelegate<Func<MTexture, SaveData, int, MTexture>>((orig, save, index) => {
+					AreaData data = FromIndexInSave(save, index);
+					return orig;
+				});
+				if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt<MTexture>("DrawCentered")))
+				{
+					Logger.Log(LogLevel.Info, "AltSidesHelper", $"Modding file select slot at {cursor.Index} in IL for OuiFileSelectSlot.orig_Render, for custom cassettes (2/2).");
+					cursor.Emit(OpCodes.Ldarg_0);
+					cursor.Emit(OpCodes.Ldfld, typeof(OuiFileSelectSlot).GetField("SaveData"));
+					cursor.Emit(OpCodes.Ldloc_S, il.Method.Body.Variables[11]); // index
+					cursor.Emit(OpCodes.Ldloc_S, il.Method.Body.Variables[8]); // vector
+					cursor.EmitDelegate<Action<SaveData, int, Vector2>>((save, index, vector) => {
+						AreaData data = FromIndexInSave(save, index);
+					});
+				}
+			}
+			if (cursor.TryGotoNext(MoveType.After,
+								instr => instr.Match(OpCodes.Box),
+								instr => instr.MatchCall<string>("Concat"),
+								instr => instr.MatchCallvirt<Atlas>("get_Item")))
+			{
+				Logger.Log(LogLevel.Info, "AltSidesHelper", $"Modding file select slot at {cursor.Index} in IL for OuiFileSelectSlot.orig_Render, for custom hearts.");
+				cursor.Emit(OpCodes.Ldarg_0);
+				cursor.Emit(OpCodes.Ldfld, typeof(OuiFileSelectSlot).GetField("SaveData"));
+				cursor.Emit(OpCodes.Ldloc_S, il.Method.Body.Variables[11]);
+				cursor.EmitDelegate<Func<MTexture, SaveData, int, MTexture>>((orig, save, index) => {
+					AreaData data = FromIndexInSave(save, index);
+					if (data != null)
+					{
+						if (data.SID == "Jackal/Cryoshock/Cryoshock-D")
+						{
+							Logger.Log("AltSidesHelper", $"Changing file select heart texture for \"{data.SID}\".");
+							// use *our* gem
+							return MTN.Journal["Jackal/Cryoshock/Cryoshock-D"];
+						}
+
+					}
+					return orig;
+				});
+			}
+		}
+
+		private void ModJournalProgressPageConstructCryo(ILContext il)
+		{
+
+			ILCursor cursor = new ILCursor(il);
+			if (cursor.TryGotoNext(MoveType.After,
+								instr => instr.Match(OpCodes.Box),
+								instr => instr.MatchCall<string>("Concat")))
+			{
+				// now do that again :P
+				if (cursor.TryGotoNext(MoveType.After,
+								instr => instr.Match(OpCodes.Box),
+								instr => instr.MatchCall<string>("Concat")))
+				{
+					cursor.Emit(OpCodes.Ldloc_2); // data
+					cursor.EmitDelegate<Func<string, AreaData, string>>((orig, data) =>
+					{
+
+						if (data.SID == "Jackal/Cryoshock/Cryoshock-D")
+						{
+							return "Jackal/Cryoshock/Cryoshock-D";
+						}
+						// use *our* gem
+						return orig;
+					});
+				}
+			}
+		}
 
 		public void HeartGemDisplay_SetCurrentMode(On.Celeste.HeartGemDisplay.orig_SetCurrentMode orig, HeartGemDisplay self, AreaMode mode, bool has)
 		{
@@ -723,8 +765,6 @@ namespace Celeste.Mod.JackalHelper
 
 			On.Celeste.Player.Update -= grappleUpdate;
 
-			On.Celeste.Level.Render -= bloodRender;
-			On.Celeste.Player.UpdateHair -= GaleHairUpdate;
 
 			IL.Celeste.OuiJournalProgress.ctor -= ModJournalProgressPageConstructCryo;
 			mod_OuiFileSelectSlot_orig_Render.Dispose();
@@ -738,89 +778,8 @@ namespace Celeste.Mod.JackalHelper
 		
 
 
-		private void ModJournalProgressPageConstructCryo(ILContext il)
-		{
-			
-			ILCursor cursor = new ILCursor(il);
-			if (cursor.TryGotoNext(MoveType.After,
-								instr => instr.Match(OpCodes.Box),
-								instr => instr.MatchCall<string>("Concat")))
-			{
-				// now do that again :P
-				if (cursor.TryGotoNext(MoveType.After,
-								instr => instr.Match(OpCodes.Box),
-								instr => instr.MatchCall<string>("Concat")))
-				{
-					cursor.Emit(OpCodes.Ldloc_2); // data
-					cursor.EmitDelegate<Func<string, AreaData, string>>((orig, data) =>
-					{
+		
 
-						if(data.SID == "Jackal/Cryoshock/Cryoshock-D")
-						{
-							return "Jackal/Cryoshock/Cryoshock-D";
-						}	
-						// use *our* gem
-						return orig;
-					});
-				}
-			}
-		}
-
-
-		private static int curSlot = -1;
-		private void ModFileSelectSlotRenderCryo(ILContext il)
-		{
-			ILCursor cursor = new ILCursor(il);
-			if (cursor.TryGotoNext(MoveType.After,
-								instr => instr.MatchLdstr("cassette"),
-								instr => instr.MatchCallvirt<Atlas>("get_Item")))
-			{
-				Logger.Log(LogLevel.Info, "AltSidesHelper", $"Modding file select slot at {cursor.Index} in IL for OuiFileSelectSlot.orig_Render, for custom cassettes (1/2).");
-				cursor.Emit(OpCodes.Ldarg_0);
-				cursor.Emit(OpCodes.Ldfld, typeof(OuiFileSelectSlot).GetField("SaveData"));
-				cursor.Emit(OpCodes.Ldloc_S, il.Method.Body.Variables[11]);
-				// literally just tell it to render nothing
-				cursor.EmitDelegate<Func<MTexture, SaveData, int, MTexture>>((orig, save, index) => {
-					AreaData data = FromIndexInSave(save, index);
-					return orig;
-				});
-				if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt<MTexture>("DrawCentered")))
-				{
-					Logger.Log(LogLevel.Info, "AltSidesHelper", $"Modding file select slot at {cursor.Index} in IL for OuiFileSelectSlot.orig_Render, for custom cassettes (2/2).");
-					cursor.Emit(OpCodes.Ldarg_0);
-					cursor.Emit(OpCodes.Ldfld, typeof(OuiFileSelectSlot).GetField("SaveData"));
-					cursor.Emit(OpCodes.Ldloc_S, il.Method.Body.Variables[11]); // index
-					cursor.Emit(OpCodes.Ldloc_S, il.Method.Body.Variables[8]); // vector
-					cursor.EmitDelegate<Action<SaveData, int, Vector2>>((save, index, vector) => {
-						AreaData data = FromIndexInSave(save, index);
-					});
-				}
-			}
-			if (cursor.TryGotoNext(MoveType.After,
-								instr => instr.Match(OpCodes.Box),
-								instr => instr.MatchCall<string>("Concat"),
-								instr => instr.MatchCallvirt<Atlas>("get_Item")))
-			{
-				Logger.Log(LogLevel.Info, "AltSidesHelper", $"Modding file select slot at {cursor.Index} in IL for OuiFileSelectSlot.orig_Render, for custom hearts.");
-				cursor.Emit(OpCodes.Ldarg_0);
-				cursor.Emit(OpCodes.Ldfld, typeof(OuiFileSelectSlot).GetField("SaveData"));
-				cursor.Emit(OpCodes.Ldloc_S, il.Method.Body.Variables[11]);
-				cursor.EmitDelegate<Func<MTexture, SaveData, int, MTexture>>((orig, save, index) => {
-					AreaData data = FromIndexInSave(save, index);
-					if (data != null)
-					{
-						if (data.SID == "Jackal/Cryoshock/Cryoshock-D")
-						{
-							Logger.Log("AltSidesHelper", $"Changing file select heart texture for \"{data.SID}\".");
-							// use *our* gem
-							return MTN.Journal["Jackal/Cryoshock/Cryoshock-D"];
-						}
-						
-					}
-					return orig;
-				});
-			}
-		}
 
 
 		private static AreaData FromIndexInSave(SaveData save, int index)

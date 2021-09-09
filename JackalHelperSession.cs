@@ -13,9 +13,6 @@ namespace Celeste.Mod.JackalHelper
 		public bool CryoDashActive { get; set; } = false;
 		public float CryoRadius { get; set; } = 25f;
 
-		public bool HasGaleDash { get; set; } = false;
-		public bool GaleDashActive { get; set; } = false;
-
 		public bool PowerDashActive { get; set; } = false;
 		public bool HasPowerDash { get; set; } = false;
 
