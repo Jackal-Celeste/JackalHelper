@@ -27,6 +27,8 @@ namespace Celeste.Mod.JackalHelper
 
 		public bool inStaminaZone { get; set; } = false;
 
+		public float regrabTimer { get; set; } = 0.2f;
+
 		// COLOURSOFNOISE: it's generally a bad idea to store entities in session/save data
 		public CustomRedBooster lastBooster { get; set; } = null;
 	}

@@ -6,14 +6,13 @@ using Monocle;
 namespace Celeste.Mod.JackalHelper.Entities
 {
 	[Tracked]
-	[CustomEntity("JackalHelper/SombraCrystal")]
 	public class GrapplingHook : Actor
 	{
 		public static ParticleType P_Impact;
 
 		public Vector2 Speed;
 
-		private Sprite sprite;
+		public Sprite sprite;
 
 		private bool dead;
 
@@ -43,6 +42,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public bool canSetPos = true;
 
 		public float lastSpeedX = 0f;
+
+		private Hitbox hitbox;
+
 		public GrapplingHook(Vector2 position)
 			: base(position)
 		{
@@ -51,12 +53,16 @@ namespace Celeste.Mod.JackalHelper.Entities
 			//IL_0021: Unknown result type (might be due to invalid IL or missing references)
 			//IL_01c7: Unknown result type (might be due to invalid IL or missing references)
 			//IL_01cc: Unknown result type (might be due to invalid IL or missing references)
-
+			Position += Vector2.UnitY * 2f;
 			previousPosition = position;
 			base.Depth = 100;
-			base.Collider = new Hitbox(8f, 10f, -4f, -10f);
-			Add(sprite = GFX.SpriteBank.Create("theo_crystal"));
-			sprite.Scale.X = -1f;
+			hitbox = new Hitbox(8f, 10f, -4f, -12f);
+			base.Collider = hitbox;
+			//sprite = new Sprite(GFX.Game, "objects/grapplingHook/object/moving");
+			sprite = JackalModule.spriteBank.Create("grappleHook");
+			Add(sprite);
+			sprite.Play("idle");
+			sprite.Position.Y -= 8f;
 			onCollideH = OnCollideH;
 			onCollideV = OnCollideV;
 			LiftSpeedGraceTime = 0.1f;
@@ -73,6 +79,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public override void Added(Scene scene)
 		{
 			//IL_009d: Unknown result type (might be due to invalid IL or missing references)
+			sprite.FlipX = JackalModule.GetPlayer().Facing == Facings.Left;
 			base.Added(scene);
 			Level = SceneAs<Level>();
 			frozen = false;
@@ -90,6 +97,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Update()
 		{
+			if (grappled)
+			{
+				sprite.Play("spin");
+			}
+		
 			if(!grappled && Speed.X == 0f)
 			{
 				Die();
@@ -347,7 +359,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 			if (!dead)
 			{
 				dead = true;
-				Add(new DeathEffect(Color.Purple, base.Center - Position));
+				base.Collider = null;
+				Add(new DeathEffect(Calc.HexToColor("777777"), base.Center - Position));
 				sprite.Visible = false;
 				base.Depth = -1000000;
 				AllowPushing = false;
@@ -361,9 +374,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			if (JackalModule.GetPlayer() != null && thrown && !dead)
 			{
-				Draw.Line(Position - 8 * Vector2.UnitY, JackalModule.GetPlayer().Center, Color.SteelBlue);
-				Draw.Line(Position - 9 * Vector2.UnitY, JackalModule.GetPlayer().Center - Vector2.UnitY, Color.LightSteelBlue);
-				Draw.Line(Position - 7 * Vector2.UnitY, JackalModule.GetPlayer().Center + Vector2.UnitY, Color.LightSteelBlue);
+				//Draw.Line(Position - 6 * Vector2.UnitY, JackalModule.GetPlayer().Center + 1*Vector2.UnitY, Color.Black);
+				//Draw.Line(Position - 10 * Vector2.UnitY, JackalModule.GetPlayer().Center - 1*Vector2.UnitY, Color.Black);
+
+
+				Draw.Line(Position - 8 * Vector2.UnitY, JackalModule.GetPlayer().Center, Calc.HexToColor("965c22"));
+				Draw.Line(Position - 9 * Vector2.UnitY, JackalModule.GetPlayer().Center - Vector2.UnitY, Calc.HexToColor("b67637"));
+				Draw.Line(Position - 7 * Vector2.UnitY, JackalModule.GetPlayer().Center + Vector2.UnitY, Calc.HexToColor("b67637"));
 			}
 			base.Render();
 		}

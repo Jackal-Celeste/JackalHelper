@@ -65,10 +65,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 			p_shatter = P_ShatterTwo;
 			p_regen = P_RegenTwo;
 			p_glow = P_GlowTwo;
-			Add(outline = new Image(GFX.Game["objects/refillCandy/outline"]));
+			Add(outline = new Image(GFX.Game["objects/grapplingHook/refill/outline"]));
 			outline.CenterOrigin();
 			outline.Visible = false;
-			Add(sprite = JackalModule.spriteBank.Create("StarCandy"));
+			Add(sprite = JackalModule.spriteBank.Create("hookRefill"));
 			sprite.Play("idle");
 			sprite.CenterOrigin();
 			Add(wiggler = Wiggler.Create(1f, 4f, delegate (float v)
