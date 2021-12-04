@@ -42,21 +42,22 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Awake(Scene scene)
 		{
-			if (JackalModule.GetLevel() != null)
+			Level level = scene as Level;
+			if (level != null)
 			{
 				redo = false;
 				if (firstLaunch)
 				{
-					if (JackalModule.GetLevel().CoreMode == Session.CoreModes.None)
+					if (level.CoreMode == Session.CoreModes.None)
 					{
-						JackalModule.GetLevel().CoreMode = Session.CoreModes.Hot;
+						level.CoreMode = Session.CoreModes.Hot;
 					}
 					firstLaunch = false;
 				}
-				mode = JackalModule.GetLevel().CoreMode;
-				red = (JackalModule.GetLevel().CoreMode == Session.CoreModes.Hot || JackalModule.GetLevel().CoreMode == Session.CoreModes.None);
-				JackalModule.GetLevel().Add(booster = new CoreBooster(Position, red, controlCoreMode));
-				booster.Position = Position + JackalModule.GetLevel().LevelOffset;
+				mode = level.CoreMode;
+				red = (level.CoreMode == Session.CoreModes.Hot || level.CoreMode == Session.CoreModes.None);
+				level.Add(booster = new CoreBooster(Position, red, controlCoreMode));
+				booster.Position = Position + level.LevelOffset;
 				dyn = new DynData<Booster>(booster);
 				dyn.Get<Sprite>("sprite").Play(booster.canChange ? "swap" : "swapSame");
 
