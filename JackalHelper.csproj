@@ -29,9 +29,6 @@
     <Reference Include="FNA">
       <HintPath>..\..\..\..\FNA.dll</HintPath>
     </Reference>
-    <Reference Include="JungleHelper">
-      <HintPath>..\..\..\JungleHelper\Code\bin\Debug\JungleHelper.dll</HintPath>
-    </Reference>
     <Reference Include="MMHOOK_Celeste">
       <HintPath>..\..\..\..\MMHOOK_Celeste.dll</HintPath>
     </Reference>

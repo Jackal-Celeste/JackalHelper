@@ -27,7 +27,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private SoundSource loopingSfx;
 
-		public bool solved = false;
+		public bool loaded = false;
+
 
 		public InsightMemorial(Vector2 position)
 			: base(position)
@@ -49,12 +50,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public void checkSolved()
 		{
-			if(JackalModule.GetLevel() != null && textCurrent.alpha <= 0f && JackalModule.GetLevel().Session.GetFlag("solved") && !solved)
+			if (JackalModule.GetLevel() != null && !loaded && textCurrent.alpha <= 0f && JackalModule.SaveData.insightCrystals.Count > 0)
 			{
-				solved = true;
-				Console.WriteLine("solved");
+				loaded = true;
+				Console.WriteLine(JackalModule.SaveData.insightCrystals.Count);
+				textCurrent = new InsightMemorialText(this, false, solvedStr);
 				JackalModule.GetLevel().Remove(textCurrent);
-				JackalModule.GetLevel().Add(textCurrent = new InsightMemorialText(this, false, solvedStr));
+				JackalModule.GetLevel().Add(textCurrent);
 			}
 		}
 

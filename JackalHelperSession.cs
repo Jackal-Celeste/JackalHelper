@@ -31,5 +31,7 @@ namespace Celeste.Mod.JackalHelper
 
 		// COLOURSOFNOISE: it's generally a bad idea to store entities in session/save data
 		public CustomRedBooster lastBooster { get; set; } = null;
+
+		public Vector2[] currentHBNodes { get; set; } = null;
 	}
 }

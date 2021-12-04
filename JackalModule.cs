@@ -10,7 +10,6 @@ using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
-using Celeste.Mod.JackalHelper.Code.Geoshock;
 
 namespace Celeste.Mod.JackalHelper
 {
@@ -22,6 +21,17 @@ namespace Celeste.Mod.JackalHelper
 		public override Type SessionType => typeof(JackalHelperSession);
 		public static JackalHelperSession Session => (JackalHelperSession)Instance._Session;
 
+
+
+		// If you need to store settings:
+		public override Type SettingsType => typeof(JackalModuleSettings);
+		public static JackalModuleSettings Settings => (JackalModuleSettings)Instance._Settings;
+
+
+		// If you need to store save data:
+		public override Type SaveDataType => typeof(JackalModuleSaveData);
+		public static JackalModuleSaveData SaveData => (JackalModuleSaveData)Instance._SaveData;
+
 		public static SpriteBank spriteBank;
 		public static SpriteBank guiSpriteBank;
 
@@ -32,6 +42,8 @@ namespace Celeste.Mod.JackalHelper
 		public static int AltbraveBirdState { get; private set; }
 
 		public static int CustomRedBoostState { get; private set; }
+
+		public static int HellBoostState { get; private set; }
 
 		private static IDetour mod_OuiFileSelectSlot_orig_Render;
 
@@ -131,12 +143,7 @@ namespace Celeste.Mod.JackalHelper
 
 			On.Celeste.Player.ClimbJump += Player_ClimbJump;
 			On.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
-
-			//On.Celeste.Player.ClimbJump += JungleHelper_Player_ClimbJump;
-			//On.Celeste.Player.ClimbUpdate += JungleHelper_Player_ClimbUpdate;
-			//IL.Celeste.Actor.MoveHExact += JungleHelper_addSidewaysJumpthrusInHorizontalMoveMethods;
-
-
+			On.Celeste.Level.ctor += Level_ctor;
 		}
 
 		#region PlayerStates
@@ -158,7 +165,14 @@ namespace Celeste.Mod.JackalHelper
 			orig.Invoke(self);
 		}
 
-
+		private void Level_ctor(On.Celeste.Level.orig_ctor orig, Level self)
+		{
+			if (JackalModule.Settings.ResetOnChapterLoad && JackalModule.SaveData.insightCrystals.Count > 0)
+			{
+				JackalModule.SaveData.insightCrystals.Clear();
+			}
+			orig.Invoke(self);
+		}
 
 
 		private void Player_ClimbJump(On.Celeste.Player.orig_ClimbJump orig, Player self)
@@ -295,128 +309,7 @@ namespace Celeste.Mod.JackalHelper
 
 		#endregion
 
-		/* #region JungleHelperExtensions
-
-		private static int JungleHelper_Player_ClimbUpdate(On.Celeste.Player.orig_ClimbUpdate orig, Player self)
-		{
-			if (GetLevel().Tracker.GetEntities<JungleRopeWrapper>().Count == 1 && GetLevel().Tracker.GetEntities<JungleHelper.Entities.ClimbableOneWayPlatform>().Count > 0)
-			{
-				JungleRopeWrapper w = GetLevel().Tracker.GetEntity<JungleRopeWrapper>();
-				if (!w.stamStored && w.initialStam > 0f)
-				{
-					w.stamStored = true;
-					w.initialStam = self.Stamina;
-				}
-				foreach (JungleHelper.Entities.ClimbableOneWayPlatform s in JackalModule.GetLevel().Tracker.GetEntities<JungleHelper.Entities.ClimbableOneWayPlatform>())
-				{
-					if (self.CollideCheck(s, self.Center + (self.Facing == Facings.Right ? 2 : -2) * Vector2.UnitX))
-					{
-						if (w.staminaBehavior == "regain") self.RefillStamina();
-						else if (w.initialStam > 0f && w.stamStored) self.Stamina = w.initialStam;
-					}
-				}
-			}
-			return orig.Invoke(self);
-		}
-
-
-		private static void JungleHelper_Player_ClimbJump(On.Celeste.Player.orig_ClimbJump orig, Player self)
-		{
-			if (GetLevel().Tracker.GetEntities<JungleRopeWrapper>().Count == 1 && GetLevel().Tracker.GetEntities<JungleHelper.Entities.ClimbableOneWayPlatform>().Count > 0)
-			{
-				JungleRopeWrapper w = GetLevel().Tracker.GetEntity<JungleRopeWrapper>();
-				foreach (JungleHelper.Entities.ClimbableOneWayPlatform s in JackalModule.GetLevel().Tracker.GetEntities<JungleHelper.Entities.ClimbableOneWayPlatform>())
-				{
-					if (self.CollideCheck(s, self.Center + (self.Facing == Facings.Right ? 2 : -2) * Vector2.UnitX))
-					{
-						if (w.sameDirBoost)
-						{
-							if (Math.Abs(self.Speed.X) < 240f && Math.Sign(Input.Aim.Value.X) == (self.Facing == Facings.Right ? 1 : -1))
-							{
-								self.Speed.X += (85f * (1 - Math.Abs(self.Speed.X) / 240f)) * (self.Facing == Facings.Right ? 1 : -1);
-								self.Speed.Y -= 15f;
-							}
-						}
-
-						if(w.staminaBehavior == "regain") self.RefillStamina();
-						else if (w.initialStam > 0f && w.stamStored) self.Stamina = w.initialStam;
-					}
-				}
-			}
-			orig.Invoke(self);
-		}
-
-		private static void JungleHelper_SidewaysJumpthruUpdate(On.Celeste.Level.orig_Update orig, Level self)
-		{
-			orig.Invoke(self);
-			if (GetLevel().Tracker.GetEntities<JungleRopeWrapper>().Count == 1 && GetLevel().Tracker.GetEntities<JungleHelper.Entities.ClimbableOneWayPlatform>().Count > 0)
-			{
-				foreach (JungleHelper.Entities.ClimbableOneWayPlatform s in self.Tracker.GetEntities<JungleHelper.Entities.ClimbableOneWayPlatform>())
-				{
-					if (JackalModule.GetPlayer() != null)
-					{
-						s.Collidable = Input.GrabCheck;
-					}
-				}
-			}
-		}
-
-		private static void JungleHelper_addSidewaysJumpthrusInHorizontalMoveMethods(ILContext il)
-		{
-			ILCursor cursor = new ILCursor(il);
-
-			if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall<Entity>("CollideFirst"))
-				 && cursor.TryGotoNext(instr => instr.OpCode == OpCodes.Brfalse_S || instr.OpCode == OpCodes.Brtrue_S))
-			{
-
-				Logger.Log("JungleHelper/ClimbableOneWayPlatform", $"Injecting sideways jumpthru check at {cursor.Index} in IL for {il.Method.Name}");
-				cursor.Emit(OpCodes.Ldarg_0);
-				cursor.Emit(OpCodes.Ldarg_1);
-				cursor.EmitDelegate<Func<Solid, Actor, int, Solid>>((orig, self, moveH) =>
-				{
-					if (orig != null)
-						return orig;
-
-					int moveDirection = Math.Sign(moveH);
-					bool movingLeftToRight = moveH > 0;
-					if (checkCollisionWithSidewaysMovingPlatformsWhileMoving(self, moveDirection, movingLeftToRight))
-					{
-						return new Solid(Vector2.Zero, 0, 0, false); // what matters is that it is non null.
-					}
-
-					return null;
-				});
-			}
-		}
-			private static bool checkCollisionWithSidewaysMovingPlatformsWhileMoving(Actor self, int moveDirection, bool movingLeftToRight)
-			{
-				JungleHelper.Entities.ClimbableOneWayPlatform climbablePlatform = collideFirstOutside(self, self.Position + Vector2.UnitX * moveDirection, !movingLeftToRight);
-				DynData<JungleHelper.Entities.ClimbableOneWayPlatform> dynData = new DynData<JungleHelper.Entities.ClimbableOneWayPlatform>(climbablePlatform);
-			if (GetLevel().Tracker.GetEntities<JungleRopeWrapper>().Count == 1)
-			{
-				JungleRopeWrapper w = GetLevel().Tracker.GetEntity<JungleRopeWrapper>();
-				if (w.staminaBehavior != "none")
-				{
-					return Input.Grab.Check && self is Player && climbablePlatform != null && dynData.Get<float>("climbJumpGrabCooldown") <= 0f;
-				}
-			}
-			return Input.Grab.Check && self is Player player && player.Stamina >= 20f && climbablePlatform != null && dynData.Get<float>("climbJumpGrabCooldown") <= 0f;
-		}
-
-
-		private static JungleHelper.Entities.ClimbableOneWayPlatform collideFirstOutside(Entity e, Vector2 at, bool leftToRight)
-		{
-			foreach (JungleHelper.Entities.ClimbableOneWayPlatform item in e.Scene.Tracker.GetEntities<JungleHelper.Entities.ClimbableOneWayPlatform>())
-			{
-				if (item.AllowLeftToRight == leftToRight && !Collide.Check(e, item) && Collide.Check(e, item, at))
-				{
-					return item;
-				}
-			}
-			return null;
-		}
-
-		#endregion JungleHelperExtensions */
+	
 
 
 		private void optimizeDestroy(On.Celeste.CrystalStaticSpinner.orig_Destroy orig, CrystalStaticSpinner self, bool boss = false)
@@ -922,10 +815,7 @@ namespace Celeste.Mod.JackalHelper
 
 			On.Celeste.Player.ClimbJump -= Player_ClimbJump;
 			On.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
-
-			//On.Celeste.Player.ClimbJump -= JungleHelper_Player_ClimbJump;
-			//On.Celeste.Player.ClimbUpdate -= JungleHelper_Player_ClimbUpdate;
-			//IL.Celeste.Actor.MoveHExact -= JungleHelper_addSidewaysJumpthrusInHorizontalMoveMethods;
+			On.Celeste.Level.ctor -= Level_ctor;
 		}
 
 		#endregion
