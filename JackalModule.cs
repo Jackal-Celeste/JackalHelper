@@ -167,7 +167,7 @@ namespace Celeste.Mod.JackalHelper
 
 		private void Level_ctor(On.Celeste.Level.orig_ctor orig, Level self)
 		{
-			if (JackalModule.Settings.ResetOnChapterLoad && JackalModule.SaveData.insightCrystals.Count > 0)
+			if (/*JackalModule.Settings.ResetOnChapterLoad && */JackalModule.SaveData.insightCrystals.Count > 0)
 			{
 				JackalModule.SaveData.insightCrystals.Clear();
 			}
