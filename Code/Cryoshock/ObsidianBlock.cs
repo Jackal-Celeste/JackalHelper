@@ -82,14 +82,14 @@ namespace Celeste.Mod.JackalHelper.Entities
 				solidData = new DynData<FireBarrier>(this);
 
 				solidData.Get<LavaRect>("Lava").CenterColor = colorCheck(Calc.HexToColor("d01c01"), Calc.HexToColor("101010"));
-				solidData.Get<LavaRect>("Lava").SurfaceColor = colorCheck(Calc.HexToColor("ff8933"), Color.DarkRed);
+				solidData.Get<LavaRect>("Lava").SurfaceColor = colorCheck(Calc.HexToColor("ff8933"), Color.Cyan);
 				solidData.Get<LavaRect>("Lava").EdgeColor = colorCheck(Calc.HexToColor("f25e29"), Color.Black);
 
 				if (safe)
 				{
 					solidData.Get<LavaRect>("Lava").UpdateMultiplier = 0f;
 					solidData.Get<LavaRect>("Lava").CenterColor = Calc.HexToColor("101010");
-					solidData.Get<LavaRect>("Lava").SurfaceColor = Color.DarkRed;
+					solidData.Get<LavaRect>("Lava").SurfaceColor = Color.Cyan;
 					solidData.Get<LavaRect>("Lava").EdgeColor = Color.Black;
 				}
 				if (JackalModule.GetPlayer() != null)
