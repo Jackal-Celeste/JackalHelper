@@ -78,8 +78,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 			height = data.Height;
 			width = data.Width;
-			Console.WriteLine(Position);
-			Console.WriteLine(killbox.Position);
 			hitbox = new Hitbox(data.Width, currentHeight);
 			rect = new Rectangle((int)Position.X, (int)Position.Y, data.Width, data.Height);
 

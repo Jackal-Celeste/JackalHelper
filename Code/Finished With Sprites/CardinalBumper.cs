@@ -53,8 +53,17 @@ namespace Celeste.Mod.JackalHelper.Entities
 			this.wobble = wobble;
 
 			startPos = Position;
-			// COLOURSOFNOISE: I feel like it'd make more sense for this to be square 
-			Collider = new Circle(12f);
+
+			Collider = new Hitbox(20f, 20f, -10f, -10f);
+			Collider leftCollider = new Hitbox(1f, 16f, -11f, -8f);
+			Collider rightCollider = new Hitbox(1f, 16f, 10f, -8f);
+			Collider topCollider = new Hitbox(16f, 1f, -8f, -11f);
+			Collider bottomCollider = new Hitbox(16f, 1f, -8f, 10f);
+
+			Add(new PlayerCollider(OnPlayerLeft, leftCollider));
+			Add(new PlayerCollider(OnPlayerRight, rightCollider));
+			Add(new PlayerCollider(OnPlayerTop, topCollider));
+			Add(new PlayerCollider(OnPlayerBottom, bottomCollider));
 
 			positionNodes = nodes;
 
@@ -68,8 +77,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 			goal = positionNodes[0];
 			index = 0;
-
-			Add(new PlayerCollider(OnPlayer));
 
 			Add(sprite = JackalModule.spriteBank.Create(spriteDirectory));
 			Add(light = new VertexLight(Color.Teal, 1f, 16, 32));
@@ -144,13 +151,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 		}
 
-		private void OnPlayer(Player player)
+		private void OnPlayer(Player player, Vector2 launchVector)
 		{
 			if (respawnTimer <= 0f)
 			{
 				Audio.Play("event:/game/06_reflection/pinballbumper_hit", Position);
 				respawnTimer = 0.7f;
-				CardinalLaunch(player, Position, snapUp: false);
+				CardinalLaunch(player, launchVector);
 				player.StateMachine.State = Player.StNormal;
 				sprite.Play("hit", restart: true);
 				light.Visible = false;
@@ -159,37 +166,38 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 		}
 
-		public void CardinalLaunch(Player player, Vector2 from, bool snapUp = true, bool sidesOnly = false)
+		private void OnPlayerLeft(Player player)
+		{
+			OnPlayer(player, new Vector2(-1f, -0.4f));
+		}
+
+		private void OnPlayerRight(Player player)
+		{
+			OnPlayer(player, new Vector2(1f, -0.4f));
+		}
+
+		private void OnPlayerTop(Player player)
+		{
+			OnPlayer(player, new Vector2(0f, -1f));
+		}
+
+		private void OnPlayerBottom(Player player)
+		{
+			OnPlayer(player, new Vector2(0f, 1f));
+		}
+
+		public void CardinalLaunch(Player player, Vector2 launchVector)
 		{
 			DynData<Player> dyn = new DynData<Player>(player);
 			dyn.Set("varJumpTimer", 0f);
 
-			bool dashing = player.StateMachine.State == Player.StDash;
-			Vector2 startingSpeed = dashing ? player.Speed : Vector2.Zero;
-			Vector2 displacement = new Vector2(player.Position.X - Center.X, player.Position.Y - Center.Y);
-
 			player.StateMachine.State = Player.StLaunch;
+			player.AutoJump = true;
 
 			Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
 			Celeste.Freeze(0.1f);
-			Vector2 vector = new Vector2(0, 0);
-			//float num = Vector2.Dot(vector, Vector2.UnitY); 
-			// num = dot product
 
-			if (Math.Abs(displacement.X) >= Math.Abs(displacement.Y) || (dashing && startingSpeed.X != 0 && startingSpeed.Y == 0))
-			{
-				vector.X = dashing ? -Math.Sign(startingSpeed.X) : Math.Sign(displacement.X);
-				vector.Y = -0.4f;
-				player.AutoJump = true;
-
-			}
-			else if (Math.Abs(displacement.Y) > Math.Abs(displacement.X) || (dashing && startingSpeed.Y != 0 && startingSpeed.X == 0))
-			{
-				vector.X = 0f;
-				vector.Y = dashing ? -Math.Sign(startingSpeed.Y) : Math.Sign(displacement.Y);
-				player.AutoJump = true;
-			}
-			Vector2 speed = vector * 350f;
+			Vector2 speed = launchVector * 350f;
 			if (!player.Inventory.NoRefills)
 			{
 				player.RefillDash();
