@@ -40,8 +40,6 @@ namespace Celeste.Mod.JackalHelper
 
 		public static int BraveBirdState { get; private set; }
 
-		public static int AltbraveBirdState { get; private set; }
-
 		public static int CustomRedBoostState { get; private set; }
 
 		public static int HellBoostState { get; private set; }
@@ -154,9 +152,8 @@ namespace Celeste.Mod.JackalHelper
 		{
 			orig.Invoke(self, position, spriteMode);
 			CryoBoostState = self.StateMachine.AddState(self.CryoBoostUpdate, self.CryoBoostCoroutine, self.CryoBoostBegin, self.CryoBoostEnd);
-			BraveBirdState = self.StateMachine.AddState(BraveBird.BraveBirdUpdate, BraveBird.BraveBirdCoroutine, BraveBird.BraveBirdBegin, BraveBird.BraveBirdEnd);
-			AltbraveBirdState = self.StateMachine.AddState(AltBraveBird.AltBraveBirdUpdate, AltBraveBird.AltBraveBirdCoroutine, AltBraveBird.AltBraveBirdBegin, AltBraveBird.AltBraveBirdEnd);
-			CustomRedBoostState = self.StateMachine.AddState(CustomRedBoost.Update, CustomRedBoost.Coroutine, CustomRedBoost.Begin, CustomRedBoost.End);
+			BraveBirdState = self.StateMachine.AddState(self.BraveBirdUpdate, begin: self.BraveBirdBegin);
+			CustomRedBoostState = self.StateMachine.AddState(self.CustomRedBoostUpdate, self.CustomRedBoostCoroutine, self.CustomRedBoostBegin, self.CustomRedBoostEnd);
 			//FlagBoosterState = self.StateMachine.AddState(FlagBooster.FlagDashUpdate, FlagBooster.FlagDashCoroutine, FlagBooster.FlagDashBegin, FlagBooster.FlagDashEnd);
 		}
 

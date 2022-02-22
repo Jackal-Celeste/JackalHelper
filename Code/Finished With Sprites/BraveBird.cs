@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -8,7 +9,9 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.JackalHelper.Entities
 {
-	[CustomEntity("JackalHelper/BraveBird")]
+	[CustomEntity(
+		"JackalHelper/BraveBird",
+		"JackalHelper/BraveBirdAlt = LoadAlt")]
 	[Tracked]
 	public class BraveBird : Entity
 	{
@@ -20,14 +23,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 			WaitForLightningClear,
 			Leaving
 		}
+		private States state;
 
-		public static ParticleType P_Feather;
-
-		private Vector2 spriteOffset = new Vector2(0f, 0f);
+		// COLOURSOFNOISE: This doesn't match vanilla, is that intentional?
+		private Vector2 spriteOffset = Vector2.Zero;
 
 		private Sprite sprite;
 
-		private States state;
 
 		private Vector2 flingSpeed;
 
@@ -47,47 +49,48 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public bool LightningRemoved;
 
-		private DynData<Player> dyn;
-
 		//Customization Variables
-		//Path is relative to gameplay folder
+		//sprite path is relative to gameplay folder
 
-		public string spritePath;
+		private Vector2 launchSpeed;
 
-		public Vector2 launchSpeed;
+		private bool canSkipNode;
 
-		public float launchSpeedX;
+		private bool stressedAtLastNode;
 
-		public float launchSpeedY;
+		private Color particleColor;
 
-		public bool canSkipNode;
+		private float skipDistance;
 
-		public bool spriteFlip;
+		// COLOURSOFNOISE: implement this in Ahorn
+		public int BirdID;
 
-		public bool stressedAtLastNode;
+		public static Entity LoadAlt(Level level, LevelData levelData, Vector2 offset, EntityData data)
+		{
+			// Backwards Compat
+			data.Values["BirdID"] = 1;
+			return new BraveBird(data, offset);
+		}
 
-		public Color particleColor;
-
-		public float skipDistance;
-
-
-
-		public BraveBird(Vector2[] nodes, bool skippable, string spritePath, float launchSpeedX, float launchSpeedY, bool canSkipNode, bool stressedAtLastNode, string particleColor, float skipDistance)
+		public BraveBird(Vector2[] nodes, bool skippable, string spritePath, float launchSpeedX, float launchSpeedY, bool canSkipNode, bool stressedAtLastNode, string particleColor, float skipDistance, int birdID)
 			: base(nodes[0])
 		{
-			this.spritePath = spritePath; /*need to do*/
-			this.launchSpeedX = launchSpeedX;
-			this.launchSpeedY = launchSpeedY;
+			BirdID = birdID;
 			launchSpeed = new Vector2(launchSpeedX, launchSpeedY);
-			spriteFlip = (launchSpeedX >= 0f);
 			this.canSkipNode = canSkipNode;
 			this.stressedAtLastNode = stressedAtLastNode;
 			this.particleColor = Calc.HexToColor(particleColor);
 			this.skipDistance = skipDistance;
 
+			Collider = new Circle(16f);
+			Add(new PlayerCollider(OnPlayer));
+
+			NodeSegments = new List<Vector2[]>();
+			NodeSegments.Add(nodes);
+			SegmentsWaiting = new List<bool>();
+			SegmentsWaiting.Add(skippable);
 
 			sprite = new Sprite(GFX.Game, spritePath);
-			sprite.Visible = true;
 			sprite.CenterOrigin();
 			sprite.Justify = new Vector2(0.5f, 0.5f);
 			sprite.AddLoop("hover", "hover", 0.1f, 0, 1, 2, 3, 4, 5);
@@ -97,7 +100,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 			Add(sprite);
 
-			sprite.FlipX = spriteFlip;
+			sprite.FlipX = launchSpeedX >= 0f;
 			sprite.Play("hover");
 			sprite.Scale.X = -1f;
 			sprite.Position = spriteOffset;
@@ -105,13 +108,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				BirdNPC.FlapSfxCheck(sprite);
 			};
-			base.Collider = new Circle(16f);
-			Add(new PlayerCollider(OnPlayer));
-			Add(moveSfx = new SoundSource());
-			NodeSegments = new List<Vector2[]>();
-			NodeSegments.Add(nodes);
-			SegmentsWaiting = new List<bool>();
-			SegmentsWaiting.Add(skippable);
 			Add(new TransitionListener
 			{
 				OnOut = delegate (float t)
@@ -119,10 +115,12 @@ namespace Celeste.Mod.JackalHelper.Entities
 					sprite.Color = Color.White * (1f - Calc.Map(t, 0f, 0.4f));
 				}
 			});
+
+			Add(moveSfx = new SoundSource());
 		}
 
 		public BraveBird(EntityData data, Vector2 levelOffset)
-			: this(data.NodesWithPosition(levelOffset), data.Bool("waiting"), data.Attr("spritePath", "characters/bird/"), data.Float("launchSpeedX", 380), data.Float("launchSpeedY", -100), data.Bool("canSkipNode", false), data.Bool("stressedAtLastNode", true), data.Attr("particleColor", "639bff"), data.Float("skipDistance", 100))
+			: this(data.NodesWithPosition(levelOffset), data.Bool("waiting"), data.Attr("spritePath", "characters/bird/"), data.Float("launchSpeedX", 380), data.Float("launchSpeedY", -100), data.Bool("canSkipNode", false), data.Bool("stressedAtLastNode", true), data.Attr("particleColor", "639bff"), data.Float("skipDistance", 100), data.Int("BirdID", 0))
 		{
 			entityData = data;
 		}
@@ -130,7 +128,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public override void Awake(Scene scene)
 		{
 			base.Awake(scene);
-			List<BraveBird> list = base.Scene.Entities.FindAll<BraveBird>();
+			List<BraveBird> list = Scene.Entities.FindAll<BraveBird>();
 			for (int num = list.Count - 1; num >= 0; num--)
 			{
 				if (list[num].entityData.Level.Name != entityData.Level.Name)
@@ -138,6 +136,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 					list.RemoveAt(num);
 				}
 			}
+			list = list.Where(bird => bird.BirdID == BirdID).ToList();
 			list.Sort((BraveBird a, BraveBird b) => Math.Sign(a.X - b.X));
 			if (list[0] == this)
 			{
@@ -153,8 +152,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 				sprite.Play(stressedAtLastNode ? "hoverStressed" : "hover");
 				sprite.Scale.X = 1f;
 			}
+
 			Player entity = scene.Tracker.GetEntity<Player>();
-			if (entity != null && entity.X > base.X)
+			if (entity != null && entity.X > X)
 			{
 				RemoveSelf();
 			}
@@ -168,9 +168,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private void OnPlayer(Player player)
 		{
-			if (state == States.Wait && DoFlingBird(player, this))
+			if (state == States.Wait && DoFlingBird(player))
 			{
-				JackalModule.Session.lastBird = entityData.ID;
+				JackalModule.Session.lastAltBird = entityData.ID;
 				flingSpeed = player.Speed * 0.4f;
 				flingSpeed.Y = 120f;
 				flingTargetSpeed = Vector2.Zero;
@@ -178,12 +178,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 				player.Speed = Vector2.Zero;
 				state = States.Fling;
 				Add(new Coroutine(DoFlingRoutine(player)));
-				Audio.Play("event:/new_content/game/10_farewell/bird_throw", base.Center);
+				Audio.Play("event:/new_content/game/10_farewell/bird_throw", Center);
 			}
 		}
 
-
-		public bool DoFlingBird(Player player, BraveBird bird)
+		public bool DoFlingBird(Player player)
 		{
 			if (!player.Dead && player.StateMachine.State != JackalModule.BraveBirdState)
 			{
@@ -197,11 +196,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 			return false;
 		}
 
-
 		public override void Update()
 		{
 			base.Update();
-			if (state != 0)
+			if (state != States.Wait)
 			{
 				sprite.Position = Calc.Approach(sprite.Position, spriteOffset, 32f * Engine.DeltaTime);
 			}
@@ -209,18 +207,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				case States.Wait:
 					{
-						Player entity = base.Scene.Tracker.GetEntity<Player>();
+						Player entity = Scene.Tracker.GetEntity<Player>();
 						if (canSkipNode)
 						{
-							if (entity != null && launchSpeed.X >= 0f && entity.X - base.X >= skipDistance)
-							{
-								Skip();
-							}
-							else if (entity != null && launchSpeed.X < 0f && base.X - entity.X >= skipDistance)
-							{
-								Skip();
-							}
-							else if (SegmentsWaiting[segmentIndex] && LightningRemoved)
+							if ((entity != null && 
+									((launchSpeed.X >= 0f && entity.X - X >= skipDistance) || 
+									(launchSpeed.X < 0f && X - entity.X >= skipDistance))) ||
+								(SegmentsWaiting[segmentIndex] && LightningRemoved))
 							{
 								Skip();
 							}
@@ -241,7 +234,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 					Position += flingSpeed * Engine.DeltaTime;
 					break;
 				case States.WaitForLightningClear:
-					if (base.Scene.Entities.FindFirst<Lightning>() == null || base.X > (Scene as Level).Bounds.Right)
+					if (Scene.Entities.FindFirst<Lightning>() == null || X > (Scene as Level).Bounds.Right)
 					{
 						sprite.Scale.X = 1f;
 						state = States.Leaving;
@@ -267,25 +260,51 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				yield return null;
 			}
+
 			sprite.Play("throw");
 			sprite.Scale.X = 1f;
 			flingSpeed = new Vector2(-140f, 140f);
 			flingTargetSpeed = Vector2.Zero;
 			flingAccel = 1400f;
 			yield return 0.1f;
+
 			Celeste.Freeze(0.05f);
 			flingTargetSpeed = launchSpeed;
 			flingAccel = 6000f;
 			yield return 0.1f;
+
 			Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
 			Engine.TimeRate = 1f;
 			level.Shake();
 			Add(new Coroutine(level.ZoomBack(0.1f)));
-			FinishFlingBird();
+
+			FinishFlingBird(player);
+
 			flingTargetSpeed = Vector2.Zero;
 			flingAccel = 4000f;
 			yield return 0.3f;
+
 			Add(new Coroutine(MoveRoutine()));
+		}
+
+		public void FinishFlingBird(Player player)
+		{
+			DynData<Player> dyn = new DynData<Player>(player);
+			player.StateMachine.State = Player.StNormal;
+			player.AutoJump = true;
+			dyn.Set<int>("forceMoveX", 1);
+			dyn.Set<float>("forceMoveXTimer", 0.2f);
+			foreach (BraveBird a in Scene.Tracker.GetEntities<BraveBird>())
+			{
+				if (a.entityData.ID == JackalModule.Session.lastAltBird)
+				{
+					player.Speed = a.flingSpeed;
+				}
+			}
+
+			dyn.Set<float>("varJumpTimer", 0.2f);
+			dyn.Set<float>("varJumpSpeed", player.Speed.Y);
+			dyn.Set<bool>("lauched", true);
 		}
 
 		private IEnumerator MoveRoutine()
@@ -361,67 +380,23 @@ namespace Celeste.Mod.JackalHelper.Entities
 			Position = to;
 		}
 
-		public override void Render()
-		{
-			base.Render();
-		}
+	}
 
-		private void DrawLine(Vector2 a, Vector2 anchor, Vector2 b)
-		{
-			new SimpleCurve(a, b, anchor).Render(Color.Red, 32);
-		}
+	public static class BraveBirdStatesExt {
 
-
-		public static void BraveBirdBegin()
+		public static void BraveBirdBegin(this Player player)
 		{
-			Player player = JackalModule.GetPlayer();
 			player.RefillDash();
 			player.RefillStamina();
 
 		}
 
-		public static void BraveBirdEnd()
+		public static int BraveBirdUpdate(this Player player)
 		{
-		}
-
-		public static int BraveBirdUpdate()
-		{
-			Player player = JackalModule.GetPlayer();
-			Level level = JackalModule.GetLevel();
-
-			player.MoveTowardsX(level.Tracker.GetNearestEntity<BraveBird>(player.Position).Position.X, 250f * Engine.DeltaTime);
-			player.MoveTowardsY(level.Tracker.GetNearestEntity<BraveBird>(player.Position).Position.Y + 8f + player.Collider.Height, 250f * Engine.DeltaTime);
+			BraveBird nearest = player.Scene.Tracker.GetNearestEntity<BraveBird>(player.Position);
+			player.MoveTowardsX(nearest.Position.X, 250f * Engine.DeltaTime);
+			player.MoveTowardsY(nearest.Position.Y + 8f + player.Collider.Height, 250f * Engine.DeltaTime);
 			return JackalModule.BraveBirdState;
 		}
-
-		public void FinishFlingBird()
-		{
-			Player player = JackalModule.GetPlayer();
-			dyn = new DynData<Player>(player);
-			player.StateMachine.State = 0;
-			player.AutoJump = true;
-			dyn.Set<int>("forceMoveX", 1);
-			dyn.Set<float>("forceMoveXTimer", 0.2f);
-			player.Speed = flingSpeed;
-			/*
-			foreach (BraveBird a in JackalModule.GetLevel().Tracker.GetEntities<BraveBird>())
-			{
-				if (a.entityData.ID == JackalModule.Session.lastAltBird)
-				{
-					player.Speed = a.flingSpeed;
-				}
-			}*/
-			dyn.Set<float>("varJumpTimer", 0.2f);
-			dyn.Set<float>("varJumpSpeed", player.Speed.Y);
-			dyn.Set<bool>("lauched", true);
-		}
-
-		public static IEnumerator BraveBirdCoroutine()
-		{
-			yield break;
-		}
-
-
-
 	}
 }
