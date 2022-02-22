@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Celeste.Mod.JackalHelper.Code.Geoshock;
 using Celeste.Mod.JackalHelper.Entities;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -109,6 +110,7 @@ namespace Celeste.Mod.JackalHelper
 			On.Celeste.Player.SuperJump += cryoBubbleHyper;
 			// Rendering
 			On.Celeste.PlayerHair.GetHairColor += CryoDashHairColor;
+			Everest.Events.Level.OnLoadBackdrop += Level_OnLoadBackdrop;
 
 			// Player TrailManager Rendering
 			On.Celeste.Player.Render += Player_Render;
@@ -266,12 +268,15 @@ namespace Celeste.Mod.JackalHelper
 
 		private PlayerDeadBody remove_CryoEffects(On.Celeste.Player.orig_Die orig, Player player, Vector2 direction, bool evenIfInvincible = false, bool registerDeathInStats = true)
 		{
-			foreach (CryoBooster b2 in player.Scene.Tracker.GetEntities<CryoBooster>())
+			if (player != null)
 			{
-				b2.FreezeTimer = 0f;
+				foreach (CryoBooster b2 in player.Scene.Tracker.GetEntities<CryoBooster>())
+				{
+					b2.FreezeTimer = 0f;
+				}
+				Session.CryoDashActive = false;
+				Session.HasCryoDash = false;
 			}
-			Session.CryoDashActive = false;
-			Session.HasCryoDash = false;
 			return orig.Invoke(player, direction, evenIfInvincible, registerDeathInStats);
 		}
 
@@ -774,6 +779,15 @@ namespace Celeste.Mod.JackalHelper
 		}
 
 
+		private Backdrop Level_OnLoadBackdrop(MapData map, BinaryPacker.Element child, BinaryPacker.Element above)
+		{
+			if (child.Name.Equals("JackalHelper/ParallaxLightSource", StringComparison.OrdinalIgnoreCase))
+			{
+				return new ParallaxLightPoint(child.AttrFloat("x", defaultValue: 0.0f), child.AttrFloat("y", defaultValue: 0.0f), child.AttrFloat("scrollX", defaultValue: 0.0f), child.AttrFloat("scrollY", defaultValue: 0.0f), child.AttrFloat("speedX", defaultValue: 0.0f), child.AttrFloat("speedY", defaultValue: 0.0f), child.AttrFloat("alpha", defaultValue: 0.0f));
+			}
+			return null;
+		}
+
 		// Unload the entirety of your mod's content. Free up any native resources.
 		public override void Unload()
 		{
@@ -781,6 +795,7 @@ namespace Celeste.Mod.JackalHelper
 			On.Celeste.Player.DashBegin -= Player_DashBegin;
 			On.Celeste.Player.DashEnd -= Player_DashEnd;
 			On.Celeste.Player.Die -= remove_CryoEffects;
+			Everest.Events.Level.OnLoadBackdrop -= Level_OnLoadBackdrop;
 
 			On.Celeste.IceBlock.OnPlayer -= SafeIce;
 			On.Celeste.SandwichLava.OnPlayer -= CryoStand;

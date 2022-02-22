@@ -17,7 +17,7 @@ namespace Celeste.Mod.JackalHelper.Code.Geoshock
 		public PLight p;
 
 		private bool lightsOn = false;
-		public ParallaxLightPoint(float x, float y, float scrollX, float scrollY, float speedX, float speedY, float alpha, Color color)
+		public ParallaxLightPoint(float x, float y, float scrollX, float scrollY, float speedX, float speedY, float alpha)
 		{
 			base.Position += new Vector2(x, y);
 			base.Scroll = new Vector2(scrollX, scrollY);
@@ -41,11 +41,13 @@ namespace Celeste.Mod.JackalHelper.Code.Geoshock
 
 		public override void Update(Scene scene)
 		{
-			p.Position = Position;
+			if (JackalModule.GetPlayer() != null) p.Position = JackalModule.GetPlayer().Position;
+			//p.Position = Position;
 		}
 
 		public override void Render(Scene level)
 		{
+			
 		}
 
 	}

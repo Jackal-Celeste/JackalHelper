@@ -242,7 +242,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 			if (JackalModule.GetPlayer() != null)
 			{
-				if (Input.Grab.Pressed && (JackalModule.GetPlayer().Position - Position).Length() > 32f)
+				if (JackalModule.Settings.SwapCrystalToggle.Check)
 				{
 					Collidable = false;
 					Die(JackalModule.GetPlayer().Position, out Vector2 p);

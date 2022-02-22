@@ -40,6 +40,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 		private VertexLight light;
 
 		private BloomPoint bloom;
+		private Hitbox top;
+		private Hitbox bot;
+		private Hitbox left;
+		private Hitbox right;
+		private ColliderList list = new ColliderList();
 
 		public static Entity LoadLinked(Level level, LevelData levelData, Vector2 offset, EntityData data)
 		{
@@ -51,11 +56,15 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			this.alwaysBumperBoost = alwaysBumperBoost;
 			this.wobble = wobble;
-
+			top = new Hitbox(20f, 2f, -10, -10);
+			bot = new Hitbox(20f, 2f,-10, 8);
+			left = new Hitbox(2f, 16f, -10, -8);
+			right = new Hitbox(2f, 16f, 8, -8);
+			list.Add(top, bot, left, right);
 			startPos = Position;
 			// COLOURSOFNOISE: I feel like it'd make more sense for this to be square 
-			Collider = new Circle(12f);
-
+			//Collider = new Circle(12f);
+			base.Collider = list;
 			positionNodes = nodes;
 
 			outlines = new Sprite[positionNodes.Length];
