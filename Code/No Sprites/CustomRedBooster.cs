@@ -28,14 +28,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 	[CustomEntity("JackalHelper/CustomRedBooster")]
 	public class CustomRedBooster : Entity
 	{
-		private const float RespawnTime = 1f;
-
 		public static ParticleType P_Burst;
-
 		public static ParticleType P_BurstRed;
-
 		public static ParticleType P_Appear;
-
 		public static ParticleType P_RedAppear;
 
 		public static readonly Vector2 playerOffset = new Vector2(0f, -2f);
@@ -45,10 +40,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 		private Entity outline;
 
 		private Wiggler wiggler;
-
-		private BloomPoint bloom;
-
-		private VertexLight light;
 
 		private Coroutine dashRoutine;
 
@@ -60,23 +51,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private float cannotUseTimer;
 
-		private bool red;
-
 		private SoundSource loopingSfx;
 
-		public bool Ch9HubBooster;
-
-		public bool Ch9HubTransition;
-
-		public float BoostTime = .25f;
-
-		public static Vector2 aim;
-
-
-
-		public string XMLreference = "boosterBase";
-
-		public string tint = "ffffff";
+		private Color tint = Color.White;
 
 		public float launchSpeed = 240f;
 
@@ -88,52 +65,38 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public bool canJump = false;
 
-		public float xSinAmp = 0f;
+		public Vector2 SinAmp;
+		public Vector2 SinFreq;
 
-		public float ySinAmp = 0f;
+		public bool BoostingPlayer { get; private set; }
 
-		public float xSinFreq = 0f;
-
-		public float ySinFreq = 0f;
-
-		public int state = 0;
-
-		public bool BoostingPlayer
-		{
-			get;
-			private set;
-		}
-
-		public CustomRedBooster(Vector2 position, float launchSpeed, float decayRate, float xsinAmp, float xSinFreq, float ySinAmp, float ySinFreq, bool overrideDashes, int dashes, bool canJump, string tint)
+		public CustomRedBooster(Vector2 position, float launchSpeed, float decayRate, float xSinAmp, float xSinFreq, float ySinAmp, float ySinFreq, bool overrideDashes, int dashes, bool canJump, string tint)
 			: base(position)
 		{
 			this.launchSpeed = launchSpeed;
 			this.decayRate = decayRate;
-			xSinAmp = xsinAmp;
-			this.ySinAmp = ySinAmp;
-			this.xSinFreq = xSinFreq;
-			this.ySinFreq = ySinFreq;
+			SinAmp = new Vector2(xSinAmp, ySinAmp);
+			SinFreq = new Vector2(xSinFreq, ySinFreq);
 			this.overrideDashes = overrideDashes;
 			this.dashes = dashes;
 			this.canJump = canJump;
-			this.tint = tint;
-			if (Calc.HexToColor(tint) == null)
+			this.tint = Calc.HexToColor(tint);
+			if (this.tint == null)
 			{
-				tint = "ffffff";
+				this.tint = Color.White;
 			}
 			if (dashes < 0)
 			{
 				dashes = 0;
 			}
-			base.Depth = -8500;
-			base.Collider = new Circle(10f, 0f, 2f);
-			red = true;
+			Depth = Depths.Above;
+			Collider = new Circle(10f, 0f, 2f);
 			Add(sprite = JackalModule.spriteBank.Create("boosterBase"));
-			sprite.Color = Calc.HexToColor(tint);
+			sprite.Color = this.tint;
 			sprite.Color.Invert();
 			Add(new PlayerCollider(OnPlayer));
-			Add(light = new VertexLight(Calc.HexToColor(tint), 1f, 16, 32));
-			Add(bloom = new BloomPoint(0.1f, 16f));
+			Add(new VertexLight(this.tint, 1f, 16, 32));
+			Add(new BloomPoint(0.1f, 16f));
 			Add(wiggler = Wiggler.Create(0.5f, 4f, delegate (float f)
 			{
 				sprite.Scale = Vector2.One * (1f + f * 0.25f);
@@ -180,7 +143,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			ParticleSystem particlesBG = SceneAs<Level>().ParticlesBG;
 			for (int i = 0; i < 360; i += 30)
 			{
-				particlesBG.Emit(Booster.P_RedAppear, 1, base.Center, Vector2.One * 2f, i * ((float)Math.PI / 180f));
+				particlesBG.Emit(Booster.P_RedAppear, 1, Center, Vector2.One * 2f, i * ((float)Math.PI / 180f));
 			}
 		}
 
@@ -188,7 +151,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			if (respawnTimer <= 0f && cannotUseTimer <= 0f && !BoostingPlayer)
 			{
-				JackalModule.Session.lastBooster = this;
 				cannotUseTimer = 0.45f;
 				CustomRedBoost(player, this);
 				Audio.Play("event:/game/05_mirror_temple/redbooster_enter", Position);
@@ -198,12 +160,12 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 		}
 
-
 		private static IEnumerator Sequence(Player player, CustomRedBooster booster)
 		{
 			yield return 0.25f;
 			booster.PlayerBoosted(player);
 		}
+
 		public void OnPlayerDashed(Vector2 direction)
 		{
 			if (BoostingPlayer)
@@ -229,7 +191,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				PlayerReleased();
 				dashRoutine.Active = false;
-				base.Tag = 0;
+				Tag = 0;
 			}
 		}
 
@@ -246,14 +208,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public override void Update()
 		{
-			Player player = JackalModule.GetPlayer();
-			if (player != null)
+			Player player = Scene.Tracker.GetEntity<Player>();
+			//if (player == null && JackalModule.Session.lastBooster == this && state == JackalModule.CustomRedBoostState)
 			{
-				state = player.StateMachine.State;
-			}
-			if (player == null && JackalModule.Session.lastBooster == this && state == JackalModule.CustomRedBoostState)
-			{
-				sprite.Play("pop");
+				//sprite.Play("pop");
 				//Visible = false;
 			}
 			base.Update();
@@ -272,10 +230,9 @@ namespace Celeste.Mod.JackalHelper.Entities
 			if (!dashRoutine.Active && respawnTimer <= 0f)
 			{
 				Vector2 target = Vector2.Zero;
-				Player entity = base.Scene.Tracker.GetEntity<Player>();
-				if (entity != null && CollideCheck(entity))
+				if (player != null && CollideCheck(player))
 				{
-					target = entity.Center + playerOffset - Position;
+					target = player.Center + playerOffset - Position;
 				}
 				sprite.Position = Calc.Approach(sprite.Position, target, 80f * Engine.DeltaTime);
 			}
@@ -298,39 +255,27 @@ namespace Celeste.Mod.JackalHelper.Entities
 			sprite.Position = position;
 		}
 
-		public override void Removed(Scene scene)
-		{
-			if (Ch9HubTransition)
-			{
-				Level level = scene as Level;
-				foreach (Backdrop item in level.Background.GetEach<Backdrop>("bright"))
-				{
-					item.ForceVisible = false;
-					item.FadeAlphaMultiplier = 1f;
-				}
-				level.Bloom.Base = AreaData.Get(level).BloomBase + 0.25f;
-				level.Session.BloomBaseAdd = 0.25f;
-			}
-			base.Removed(scene);
-		}
-
 		public static void CustomRedBoost(Player player, CustomRedBooster booster)
 		{
 			player.StateMachine.State = JackalModule.CustomRedBoostState;
 			player.Position = booster.Center;
 			player.Speed = Vector2.Zero;
-			new DynData<Player>(player).Set("boostTarget", booster.Center);
+
+			var playerData = new DynData<Player>(player);
+			playerData.Set("boostTarget", booster.Center);
+			playerData.Set(Entities.CustomRedBoost.PLAYER_LASTBOOSTER, booster);
+
 			booster.Add(new Coroutine(Sequence(player, booster)));
 		}
 
 		public void PlayerBoosted(Player player)
 		{
-			player.Center = base.Center;
+			player.Center = Center;
 			Audio.Play("event:/game/05_mirror_temple/redbooster_dash", Position);
 			loopingSfx.Play("event:/game/05_mirror_temple/redbooster_move");
 			loopingSfx.DisposeOnTransition = false;
 			BoostingPlayer = true;
-			base.Tag = Tags.Persistent | Tags.TransitionUpdate;
+			Tag = Tags.Persistent | Tags.TransitionUpdate;
 			sprite.Play("spin");
 			sprite.FlipX = player.Facing == Facings.Left;
 			outline.Visible = true;
@@ -341,12 +286,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private IEnumerator BoostRoutine(Player player, Vector2 dir)
 		{
-			float angle = (-dir).Angle();
-			while ((player.StateMachine.State == JackalModule.CustomRedBoostState || player.StateMachine.State == 2) && BoostingPlayer)
+			while ((player.StateMachine.State == JackalModule.CustomRedBoostState || player.StateMachine.State == Player.StDash) && BoostingPlayer)
 			{
 				sprite.RenderPosition = player.Center + playerOffset;
 				loopingSfx.Position = sprite.Position;
-				if (base.Scene.OnInterval(0.02f))
+				if (Scene.OnInterval(0.02f))
 				{
 					//(base.Scene as Level).ParticlesBG.Emit(P_Burst, 2, player.Center - dir * 3f + new Vector2(0f, -2f), new Vector2(3f, 3f), angle);
 				}
@@ -358,7 +302,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			{
 				yield return null;
 			}
-			base.Tag = 0;
+			Tag = 0;
 		}
 
 
