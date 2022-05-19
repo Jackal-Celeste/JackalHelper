@@ -2,7 +2,7 @@ module JackalHelperDeadlyWater
 
 using ..Ahorn, Maple
 
-@mapdef Entity "JackalHelper/DeadlyWater" DeadlyWater(x::Integer, y::Integer, width::Integer=Maple.defaultBlockWidth, height::Integer=Maple.defaultBlockHeight, hasBottom::Bool=false, color::String="DarkCyan")
+@mapdef Entity "JackalHelper/DeadlyWater" DeadlyWater(x::Integer, y::Integer, width::Integer=Maple.defaultBlockWidth, height::Integer=Maple.defaultBlockHeight, hasRays::Bool=false, color::String="DarkCyan")
 
 function getColor(color)
     if haskey(Ahorn.XNAColors.colors, color)
