@@ -19,6 +19,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		private Color rayTopColor;
 
+		private bool hasRays;
+
 		private bool fixedSurfaces;
 
 		private bool visibleOnCamera;
@@ -45,8 +47,6 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		public static FieldInfo rayTopColorField = typeof(Water).GetField("RayTopColor", BindingFlags.Static | BindingFlags.Public);
 
-		public static FieldInfo fillField = typeof(Water).GetField("fill", BindingFlags.Instance | BindingFlags.NonPublic);
-
 		protected PlayerCollider playerCollider;
 
 		protected Hitbox hitbox;
@@ -67,7 +67,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 			baseColor = ColorHelper.GetColor(data.Attr("color", "#87CEFA"));
 			surfaceColor = baseColor;
 			fillColor = baseColor * 0.2f;
-			rayTopColor = baseColor * 0f;
+			rayTopColor = baseColor * 0.4f;
+			hasRays = data.Bool("hasRays", false);
 			fixedSurfaces = false;
 			currentHeight = data.Height;
 			data.Height = (int)currentHeight;
@@ -98,17 +99,27 @@ namespace Celeste.Mod.JackalHelper.Entities
 				Surfaces.Clear();
 				if (hasTop)
 				{
-					TopSurface = new Surface(Position + new Vector2(base.Width / 2f, 8f), new Vector2(0f, -1f), base.Width, base.Height);
+					TopSurface = new Surface(Position + new Vector2(Width / 2f, 8f), new Vector2(0f, -1f), Width, Height);
 					Surfaces.Add(TopSurface);
 					actualTopSurface = TopSurface;
-					dummyTopSurface = new Surface(Position + new Vector2(base.Width / 2f, 8f), new Vector2(0f, -1f), base.Width, base.Height);
+					dummyTopSurface = new Surface(Position + new Vector2(Width / 2f, 8f), new Vector2(0f, -1f), Width, Height);
+					if (!hasRays)
+					{
+						actualTopSurface.Rays.Clear();
+						dummyTopSurface.Rays.Clear();
+					}
 				}
 				if (hasBottom)
 				{
-					BottomSurface = new Surface(Position + new Vector2(base.Width / 2f, base.Height - 8f), new Vector2(0f, 1f), base.Width, base.Height);
+					BottomSurface = new Surface(Position + new Vector2(Width / 2f, Height - 8f), new Vector2(0f, 1f), Width, Height);
 					Surfaces.Add(BottomSurface);
 					actualBottomSurface = BottomSurface;
-					dummyBottomSurface = new Surface(Position + new Vector2(base.Width / 2f, base.Height - 8f), new Vector2(0f, 1f), base.Width, base.Height);
+					dummyBottomSurface = new Surface(Position + new Vector2(Width / 2f, Height - 8f), new Vector2(0f, 1f), Width, Height);
+					if (!hasRays)
+					{
+						actualBottomSurface.Rays.Clear();
+						dummyBottomSurface.Rays.Clear();
+					}
 				}
 				fixedSurfaces = true;
 				actualSurfaces = Surfaces;
@@ -130,17 +141,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 		}
 
-		public override void Awake(Scene scene)
-		{
-			base.Awake(scene);
-
-		}
-
-		private void updateVisiblity(Level level)
+		private void updateVisibility(Level level)
 		{
 			Camera camera = level.Camera;
-			bool horizontalCheck = base.X < camera.Right + horizontalVisiblityBuffer && base.X + base.Width > camera.Left - horizontalVisiblityBuffer;
-			bool verticalCheck = base.Y < camera.Bottom + verticalVisiblityBuffer && base.Y + base.Height > camera.Top - verticalVisiblityBuffer;
+			bool horizontalCheck = X < camera.Right + horizontalVisiblityBuffer && X + Width > camera.Left - horizontalVisiblityBuffer;
+			bool verticalCheck = Y < camera.Bottom + verticalVisiblityBuffer && Y + Height > camera.Top - verticalVisiblityBuffer;
 			visibleOnCamera = horizontalCheck && verticalCheck;
 		}
 
@@ -203,7 +208,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		{
 			Level level = base.Scene as Level;
 			Color origRayTop = Water.RayTopColor;
-			updateVisiblity(level);
+			updateVisibility(level);
 			updateSurfaces();
 			changeColor(rayTopColorField, origRayTop, rayTopColor);
 			base.Update();
@@ -269,15 +274,11 @@ namespace Celeste.Mod.JackalHelper.Entities
 		public KillBoxTrigger(EntityData data, Vector2 offset)
 			: base(data, offset)
 		{
-		}//IL_0002: Unknown result type (might be due to invalid IL or missing references)
+		}
 
 
 		public override void OnEnter(Player player)
 		{
-			//IL_001a: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0020: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0025: Unknown result type (might be due to invalid IL or missing references)
-			//IL_002a: Unknown result type (might be due to invalid IL or missing references)
 			base.OnEnter(player);
 			if (!SaveData.Instance.Assists.Invincible)
 			{

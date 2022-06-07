@@ -1,0 +1,6 @@
+- Name: JackalHelper
+  Version: 1.6.7
+  DLL: bin/Debug/JackalHelper.dll
+  Dependencies:
+    - Name: Everest
+      Version: 1.1761.0
