@@ -8,37 +8,37 @@ using System.Reflection;
 namespace Celeste.Mod.JackalHelper.Code.Geoshock
 {
 	[Tracked]
-	public class PharaohFollower : Entity
+	public class GeobotFollower : Entity
 	{
-		public const string SESSION_FLAG = "has_pharaoh_follower";
+		public const string SESSION_FLAG = "has_Geobot_follower";
 
 		private float previousPosition;
 
 		public Follower follower { get; private set; }
 
-		public static PharaohFollower instance { get; set; }
+		public static GeobotFollower instance { get; set; }
 
-		public PharaohDummy dummy { get; private set; }
-
-
+		public GeobotDummy dummy { get; private set; }
 
 
-		[Command("spawn_follower_pharaoh", "spawn pharaoh follower")]
-		public static void CmdSpawnPharaoh()
+
+
+		[Command("spawn_follower_geobot", "spawn Geobot follower")]
+		public static void CmdSpawnGeobot()
 		{
 			Level level = Engine.Scene as Level;
-			SpawnPharaohFriendo(level);
+			SpawnGeobotFriendo(level);
 		}
 
-		public static void SpawnPharaohFriendo(Level _level)
+		public static void SpawnGeobotFriendo(Level _level)
 		{
 			Player player = JackalModule.GetPlayer();
 			if (_level != null)
 			{
-				_level.Session.SetFlag("has_pharaoh_follower");
+				_level.Session.SetFlag("has_Geobot_follower");
 				if (player != null)
 				{
-					PharaohFollower follower = new PharaohFollower(_level, player.Position + new Vector2(player.Facing == Facings.Right ? -12 : 12, -12f));
+					GeobotFollower follower = new GeobotFollower(_level, player.Position + new Vector2(player.Facing == Facings.Right ? -12 : 12, -12f));
 					_level.Add(follower);
 					player.Leader.GainFollower(follower.follower);
 				}
@@ -54,15 +54,15 @@ namespace Celeste.Mod.JackalHelper.Code.Geoshock
 			dummy.Position = obj.Position - new Vector2((obj.Facing == Facings.Left) ? (-32) : 32, 32f);
 		}
 
-		public PharaohFollower(Level level, Vector2 position)
-			: this(level, new PharaohDummy(position), position)
+		public GeobotFollower(Level level, Vector2 position)
+			: this(level, new GeobotDummy(position), position)
 		{
 		}
 
-		public PharaohFollower(Level level, PharaohDummy _dummy, Vector2 position)
+		public GeobotFollower(Level level, GeobotDummy _dummy, Vector2 position)
 			: base(position)
 		{
-			level.Session.SetFlag("has_pharaoh_follower");
+			level.Session.SetFlag("has_Geobot_follower");
 			level.Add(dummy = _dummy);
 			dummy.Add(this.follower = new Follower());
 			this.follower.PersistentFollow = true;
@@ -78,7 +78,7 @@ namespace Celeste.Mod.JackalHelper.Code.Geoshock
 			{
 				JackalModule.GetPlayer().Leader.GainFollower(follower);
 			}
-			if ((previousPosition - dummy.Position.X) * dummy.Sprite.Scale.X > 0f)
+			if ((previousPosition - dummy.Position.X) * dummy.Sprite.Scale.X < 0f)
 			{
 				dummy.Sprite.Scale.X *= -1f;
 			}
@@ -89,7 +89,7 @@ namespace Celeste.Mod.JackalHelper.Code.Geoshock
 	}
 
 
-	public class PharaohDummy : Entity
+	public class GeobotDummy : Entity
 	{
 		public Sprite Sprite;
 
@@ -107,12 +107,12 @@ namespace Celeste.Mod.JackalHelper.Code.Geoshock
 
 		public VertexLight bp;
 
-		public PharaohDummy(Vector2 position)
+		public GeobotDummy(Vector2 position)
 			: base(position)
 		{
 			Depth = 50;
 			base.Collider = new Hitbox(6f, 6f, -3f, -7f);
-			Sprite = JackalModule.spriteBank.Create("pharaoh");
+			Sprite = JackalModule.spriteBank.Create("geobot");
 			Sprite.Play("idleFree");
 			Sprite.Scale.X = -1f;
 			Position.Y -= 4f;
@@ -120,7 +120,7 @@ namespace Celeste.Mod.JackalHelper.Code.Geoshock
 			Add(Wave = new SineWave(0.25f, 0f));
 			Wave.OnUpdate = delegate (float f)
 			{
-				Sprite.Position = floatNormal * -2f*f * Floatness - Vector2.UnitY * 4f;
+				Sprite.Position = floatNormal * -2f * f * Floatness - Vector2.UnitY * 4f;
 			};
 			Add(Light = new VertexLight(new Vector2(0f, -8f), Color.Gold, 1f, 20, 60));
 			Add(bp = new VertexLight(new Vector2(0f, -8f), Color.Orange, 1f, 10, 70));

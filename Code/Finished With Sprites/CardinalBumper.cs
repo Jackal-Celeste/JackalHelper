@@ -51,13 +51,13 @@ namespace Celeste.Mod.JackalHelper.Entities
 			return new CardinalBumper(data, offset) { Linked = true };
 		}
 
-		public CardinalBumper(Vector2 position, Vector2[] nodes, bool alwaysBumperBoost, bool wobble, string spriteDirectory) 
+		public CardinalBumper(Vector2 position, Vector2[] nodes, bool alwaysBumperBoost, bool wobble, string spriteDirectory, string overrideStr)
 			: base(position)
 		{
 			this.alwaysBumperBoost = alwaysBumperBoost;
 			this.wobble = wobble;
 			top = new Hitbox(20f, 2f, -10, -10);
-			bot = new Hitbox(20f, 2f,-10, 8);
+			bot = new Hitbox(20f, 2f, -10, 8);
 			left = new Hitbox(2f, 16f, -10, -8);
 			right = new Hitbox(2f, 16f, 8, -8);
 			list.Add(top, bot, left, right);
@@ -98,8 +98,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 		}
 
-		public CardinalBumper(EntityData data, Vector2 offset) 
-			: this(data.Position + offset, data.NodesWithPosition(offset), data.Bool("alwaysBumperBoost", defaultValue: false), data.Bool("wobble", defaultValue: false), data.Attr("spriteDirectory", defaultValue: "bumperCardinal"))
+		public CardinalBumper(EntityData data, Vector2 offset)
+			: this(data.Position + offset, data.NodesWithPosition(offset), data.Bool("alwaysBumperBoost", defaultValue: false), data.Bool("wobble", defaultValue: false), data.Attr("spriteDirectory", defaultValue: "bumperCardinal"), data.Attr("overrideString", defaultValue:""))
 		{ }
 
 		public override void Added(Scene scene)

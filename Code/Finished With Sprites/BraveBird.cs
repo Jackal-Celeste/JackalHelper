@@ -64,6 +64,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 
 		// COLOURSOFNOISE: implement this in Ahorn
 		public int BirdID;
+		private bool toggleZoom = false;
 
 		public static Entity LoadAlt(Level level, LevelData levelData, Vector2 offset, EntityData data)
 		{
@@ -72,7 +73,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			return new BraveBird(data, offset);
 		}
 
-		public BraveBird(Vector2[] nodes, bool skippable, string spritePath, float launchSpeedX, float launchSpeedY, bool canSkipNode, bool stressedAtLastNode, string particleColor, float skipDistance, int birdID)
+		public BraveBird(Vector2[] nodes, bool skippable, string spritePath, float launchSpeedX, float launchSpeedY, bool canSkipNode, bool stressedAtLastNode, string particleColor, float skipDistance, int birdID, bool toggleZoom)
 			: base(nodes[0])
 		{
 			BirdID = birdID;
@@ -81,6 +82,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			this.stressedAtLastNode = stressedAtLastNode;
 			this.particleColor = Calc.HexToColor(particleColor);
 			this.skipDistance = skipDistance;
+			this.toggleZoom = toggleZoom;
 
 			Collider = new Circle(16f);
 			Add(new PlayerCollider(OnPlayer));
@@ -120,7 +122,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 		}
 
 		public BraveBird(EntityData data, Vector2 levelOffset)
-			: this(data.NodesWithPosition(levelOffset), data.Bool("waiting"), data.Attr("spritePath", "characters/bird/"), data.Float("launchSpeedX", 380), data.Float("launchSpeedY", -100), data.Bool("canSkipNode", false), data.Bool("stressedAtLastNode", true), data.Attr("particleColor", "639bff"), data.Float("skipDistance", 100), data.Int("BirdID", 0))
+			: this(data.NodesWithPosition(levelOffset), data.Bool("waiting"), data.Attr("spritePath", "characters/bird/"), data.Float("launchSpeedX", 380), data.Float("launchSpeedY", -100), data.Bool("canSkipNode", false), data.Bool("stressedAtLastNode", true), data.Attr("particleColor", "639bff"), data.Float("skipDistance", 100), data.Int("BirdID", 0), data.Bool("toggleZoom", defaultValue:false))
 		{
 			entityData = data;
 		}
@@ -253,7 +255,7 @@ namespace Celeste.Mod.JackalHelper.Entities
 			Vector2 zoom = player.Position - camera;
 			zoom.X = Calc.Clamp(zoom.X, 145f, 215f);
 			zoom.Y = Calc.Clamp(zoom.Y, 85f, 95f);
-			Add(new Coroutine(level.ZoomTo(zoom, 1.1f, 0.2f)));
+			if(!toggleZoom) Add(new Coroutine(level.ZoomTo(zoom, 1.1f, 0.2f)));
 			Engine.TimeRate = 0.8f;
 			Input.Rumble(RumbleStrength.Light, RumbleLength.Medium);
 			while (flingSpeed != Vector2.Zero)

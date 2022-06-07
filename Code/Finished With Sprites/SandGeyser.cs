@@ -140,14 +140,25 @@ namespace Celeste.Mod.JackalHelper.Entities
 			}
 			Depth = 400;
 		}
+		private bool sandy = false;
 		public override void Update()
 		{
-			if (JackalModule.GetLevel() != null && JackalModule.GetPlayer() != null)
+			if (JackalModule.GetLevel() != null && JackalModule.TryGetPlayer(out Player p))
 			{
-				if (JackalModule.GetPlayer().Position.X > Position.X && JackalModule.GetPlayer().Position.X < (Position.X + Width) && JackalModule.GetPlayer().Position.Y > Position.Y)
+				if (p.Position.X > Position.X && p.Position.X < (Position.X + Width) && p.Position.Y > Position.Y)
 				{
-					JackalModule.GetPlayer().Speed.Y -= riseRate;
-					JackalModule.GetPlayer().Speed.Y = Math.Max(-maxSpeed, JackalModule.GetPlayer().Speed.Y);
+					//if(!sandy) Audio.Play("event:/jackalhelpersfx/SandStart");
+					sandy = true;
+					if (p.StateMachine.State != 2)
+					{
+						p.Speed.Y -= riseRate;
+						p.Speed.Y = Math.Max(-maxSpeed, JackalModule.GetPlayer().Speed.Y);
+					}
+				}
+				else
+				{
+					if(sandy) Audio.Play("event:/jackalhelpersfx/SandEnd");
+					sandy = false;
 				}
 
 			}
