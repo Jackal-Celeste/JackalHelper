@@ -156,7 +156,7 @@
 <Center/>
 <Loop id="idleGhost" path="pharoah" frames="00-07" delay="0.1"/>
 <Anim id="fadeAway" path="pharoah" frames="08-33" delay="0.1"/>
-<Anim id="wakeUp" path="phaorah" frames="34-40" delay="0.1" goto="idleFree"/>
+<Anim id="wakeUp" path="pharoah" frames="34-40" delay="0.1" goto="idleFree"/>
 <Loop id="idleFree" path="pharoah" frames="41-56" delay="0.2"/>
 </pharaoh>
 
