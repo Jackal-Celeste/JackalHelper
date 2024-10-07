@@ -6,7 +6,7 @@
     <AssemblyName>JackalHelper</AssemblyName>
     <RootNamespace>Celeste.Mod.JackalHelper</RootNamespace>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <!--Disable "Copy Local" for all references-->
@@ -21,10 +21,7 @@
 
   <ItemGroup>
     <Reference Include="Celeste">
-      <HintPath>..\..\..\..\Celeste.exe</HintPath>
-    </Reference>
-    <Reference Include="Celeste.Content">
-      <HintPath>..\..\..\..\Celeste.Content.dll</HintPath>
+      <HintPath>..\..\..\..\Celeste.dll</HintPath>
     </Reference>
     <Reference Include="FNA">
       <HintPath>..\..\..\..\FNA.dll</HintPath>

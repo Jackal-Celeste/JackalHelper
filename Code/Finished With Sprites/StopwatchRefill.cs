@@ -128,6 +128,8 @@ namespace Celeste.Mod.JackalHelper.Entities
 						MoveFollowers(player.Leader, (Position + new Vector2(0f, 8f)) - player.Position);
 
 					player.Position = (Position + new Vector2(0f, 8f));
+					//Optional: reset state
+					player.StateMachine.State = 0;
 				}
 				timed = false;
 				recallTimer = 0f;
@@ -223,7 +225,10 @@ namespace Celeste.Mod.JackalHelper.Entities
 			SlashFx.Burst(Position, angle);
 			if (oneUse)
 			{
-				RemoveSelf();
+				sprite.Visible = outline.Visible = false;
+				Visible = false;
+				Collidable = false;
+				//RemoveSelf();
 			}
 		}
 
