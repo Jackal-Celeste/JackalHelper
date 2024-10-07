@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Sprites>
+
+
+<heartCryo path="collectables/heartgem/cryo/big/spin">
+		<Center/>
+
+		<Loop id="idle" path="" frames="0" />
+		<Loop id="spin" path="" frames="0*10,1-10" delay="0.18"/>
+		<Loop id="fastspin" path="" delay="0.1"/>
+	</heartCryo>
+	<heartgem2 path="collectables/heartgem/2/">
+		<Center />
+
+		<Loop id="idle" path="" frames="0" />
+		<Loop id="spin" path="" frames="0*10,1-13" delay="0.1"/>
+		<Loop id="fastspin" path="" delay="0.1"/>
+	</heartgem2>
+
+
+</Sprites>
