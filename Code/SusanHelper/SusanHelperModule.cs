@@ -81,8 +81,8 @@ namespace Celeste.Mod.SusanHelper
 
         private bool Player_RefillDash(On.Celeste.Player.orig_RefillDash orig, Player self)
         {
-            Water w = self.CollideFirst<Water>();
-            if (w != null && (w is InkWater) &&!self.DashAttacking && self.Dashes == 0)
+			// Check if player.Scene is null to avoid crash when player dies while in a badeline orb
+			if (self.Scene != null && self.CollideFirst<Water>() is InkWater && !self.DashAttacking && self.Dashes == 0)
             {
                 return false;
             }
@@ -99,11 +99,11 @@ namespace Celeste.Mod.SusanHelper
         {
             Holdable h;
             bool origGrabData = SaveData.Instance.Assists.NoGrabbing;
-            if (self.Holding?.Entity is PaintBall && Input.GrabCheck)
-            {
-                h = self.Holding;
-                PaintBall tc = (self.Holding?.Entity as PaintBall);
-                tc.Collidable = false;
+			if (self.Holding?.Entity is PaintBall && Input.GrabCheck)
+			{
+				h = self.Holding;
+				PaintBall tc = (self.Holding?.Entity as PaintBall);
+				tc.Collidable = false;
                 self.Holding = null;
                 SaveData.Instance.Assists.NoGrabbing = true;
                 int origState = orig.Invoke(self);
